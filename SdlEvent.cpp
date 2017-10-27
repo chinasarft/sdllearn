@@ -8,25 +8,36 @@ void DrawSelected(SDL_Renderer *renderer, SDL_Rect & rect)
 
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
 
-    SDL_Rect rect0{ rect.x - 1, rect.y - 1, rect.w + 2, rect.h + 2 };
-    SDL_RenderDrawRect(renderer, &rect0);
-
     //lefttop
-    SDL_Rect rect1{ rect.x - 1 - bc/2, rect.y - 1 - bc/2, bc, bc};
+    SDL_Rect rect1{ rect.x - bc/2, rect.y - bc/2, bc, bc};
     SDL_RenderDrawRect(renderer, &rect1);
     //righttop
-    SDL_Rect rect2{ rect.x + rect.w + 1 - bc/2, rect.y - 1 - bc/2, bc, bc};
+    SDL_Rect rect2{ rect.x + rect.w - bc/2, rect.y - bc/2, bc, bc};
     SDL_RenderDrawRect(renderer, &rect2);
 
     //leftbottom
-    SDL_Rect rect3{ rect.x  - 1 - bc/2, rect.y + rect.h - 1 - bc/2, bc, bc};
+    SDL_Rect rect3{ rect.x  - bc/2, rect.y + rect.h - bc/2, bc, bc};
     SDL_RenderDrawRect(renderer, &rect3);
     //rightbottom
-    SDL_Rect rect4{ rect.x + rect.w + 1 - bc/2, rect.y + rect.h - 1 - bc/2, bc, bc};
+    SDL_Rect rect4{ rect.x + rect.w - bc/2, rect.y + rect.h - bc/2, bc, bc};
     SDL_RenderDrawRect(renderer, &rect4);
 
-    SDL_SetRenderDrawColor(renderer, r, g, b, a);
+    //leftcenter
+    SDL_Rect rect5{ rect.x - bc/2, rect.y - bc/2 + rect.h/2, bc, bc};
+    SDL_RenderDrawRect(renderer, &rect5);
+    //rightcenter
+    SDL_Rect rect6{ rect.x + rect.w - bc/2, rect.y - bc/2 + rect.h/2, bc, bc};
+    SDL_RenderDrawRect(renderer, &rect6);
 
+    //topcenter
+    SDL_Rect rect7{ rect.x + rect.w/2  - bc/2, rect.y - bc/2, bc, bc};
+    SDL_RenderDrawRect(renderer, &rect7);
+    //bottomcenter
+    SDL_Rect rect8{ rect.x + rect.w/2 - bc/2, rect.y + rect.h - bc/2, bc, bc};
+    SDL_RenderDrawRect(renderer, &rect8);
+
+
+    SDL_SetRenderDrawColor(renderer, r, g, b, a);
 }
 
 SdlEvent::SdlEvent(QWidget *parent)
@@ -40,6 +51,7 @@ SdlEvent::SdlEvent(QWidget *parent)
         isSDLInitOk = true;
         qDebug() << "SDL_Init Error: " << SDL_GetError();
     }
+    memset(&background, 0, sizeof(background));
 
     connect(&thread, SIGNAL(resultReady()), this, SLOT(slot_render()));
     thread.start();
@@ -56,7 +68,7 @@ SdlEvent::~SdlEvent()
         SDL_Quit();
     }
     //Destroy the various items
-    cleanup(background, image);
+    cleanup(background.texture, image);
     if (window) {
         cleanup(window);
     }
@@ -142,14 +154,17 @@ void SdlEvent::on_pushButton_clicked()
 
     //The textures we'll be using
     const std::string resPath = "C:\\d\\render\\sdl_learn\\sdl_project\\SdlEvent\\";
-    background = loadTexture(resPath + "background.png", renderer);
+    background.texture = loadTexture(resPath + "background.png", renderer);
     image = loadTexture(resPath + "image.png", renderer);
     //Make sure they both loaded ok
-    if (background == nullptr || image == nullptr) {
-        cleanup(background, image);
+    if (background.texture == nullptr || image == nullptr) {
+        cleanup(background.texture, image);
         return ;
     }
 
+    SDL_QueryTexture(background.texture, NULL, NULL, &background.width, &background.height);
+    background.leftTopX = 0;
+    background.leftTopY = 0;
     return ;
 }
 
@@ -157,8 +172,8 @@ void SdlEvent::enableBlend()
 {
     if(renderer != nullptr)
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-    if (background != nullptr) {
-        SDL_SetTextureBlendMode(background, SDL_BLENDMODE_BLEND);
+    if (background.texture != nullptr) {
+        SDL_SetTextureBlendMode(background.texture, SDL_BLENDMODE_BLEND);
     }
     if (image != nullptr) {
         SDL_SetTextureBlendMode(image, SDL_BLENDMODE_BLEND);
@@ -189,28 +204,20 @@ void SdlEvent::slot_render()
             qDebug() << "event keydown...........";
             break;
         case SDL_MOUSEBUTTONDOWN:
-            mouseDown = true;
-            prex = e.motion.x - leftTopX;
-            prey = e.motion.y - leftTopY;
-            qDebug() << "event mousedown------------>"<<prex << prey<<mouseDown;
-            //记录鼠标位置
+            sprite_response_mouse_press(&background, &e.motion);
             break;
         case SDL_MOUSEBUTTONUP:
+            sprite_response_mouse_up(&background, &e.motion);
+            
             prex = 0;
             prey = 0;
             mouseDown = false;
             qDebug() << "event mouseup===============";
+            
             break;
         case SDL_MOUSEMOTION:
-            //获取鼠标位置， 与上一个鼠标位置计算差值，得到图片的移：动
-            if (mouseDown) {
-                leftTopX = (e.motion.x - prex);
-                leftTopY = (e.motion.y - prey);
-                qDebug() << "event mousemove---------------->"<< e.motion.x<< e.motion.y << leftTopX << leftTopY;
-            }
-            else {
-                qDebug() << "event mousemove..........." << e.motion.x<< e.motion.y << mouseDown;
-            }
+            sprite_response_mouse_move(&background, &e.motion);
+
             break;
         default:
             qDebug() << "event..........." << e.type;
@@ -237,7 +244,7 @@ void SdlEvent::slot_render()
         for (int i = 0; i < xTiles * yTiles; ++i) {
             int x = i % xTiles;
             int y = i / xTiles;
-            renderTexture(background, renderer, x * TILE_SIZE, 
+            renderTexture(background.texture, renderer, x * TILE_SIZE, 
                 y * TILE_SIZE , TILE_SIZE, TILE_SIZE);
         }
     }
@@ -252,9 +259,10 @@ void SdlEvent::slot_render()
         SDL_SetRenderDrawColor(renderer, r, g, b, a);
 
 
-        renderTexture(background, renderer, leftTopX, leftTopY);
+        renderTexture(background.texture, renderer, background.leftTopX, 
+            background.leftTopY, background.width, background.height);
         renderTexture(image, renderer, 0, 0);
-        SDL_Rect pic{ leftTopX, leftTopY, 320, 240 };
+        SDL_Rect pic{ background.leftTopX, background.leftTopY, background.width, background.height};
         DrawSelected(renderer, pic);
     }
     else {

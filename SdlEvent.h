@@ -5,7 +5,7 @@
 #include <QDebug>
 #include <QThread>
 #define SDL_MAIN_HANDLED  
-#include <SDL.h>
+#include <sprite.h>
 #include <SDL_image.h>
 
 class WorkerThread : public QThread
@@ -54,9 +54,7 @@ private:
     SDL_Renderer *renderer = nullptr;
     WorkerThread thread;
     SDL_Texture *image = nullptr;
-    SDL_Texture *background = nullptr;
-    int leftTopX = 0;
-    int leftTopY = 0;
+    Sprite background ;
     bool mouseDown = false;
     int prex, prey;
     int transparentValue=180;
