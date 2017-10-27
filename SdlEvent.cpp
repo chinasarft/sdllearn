@@ -84,7 +84,8 @@ void SdlEvent::logSDLError(std::string str)
     qDebug() << str.c_str();
 }
 
-void SdlEvent::renderTexture(SDL_Texture *tex, SDL_Renderer *ren, int x, int y, int w, int h) {
+void SdlEvent::renderTexture(SDL_Texture *tex, SDL_Renderer *ren, int x, int y, int w, int h, 
+    SDL_RendererFlip flip) {
     //Setup the destination rectangle to be at the position we want
     SDL_Rect dst;
     dst.x = x;
@@ -92,7 +93,7 @@ void SdlEvent::renderTexture(SDL_Texture *tex, SDL_Renderer *ren, int x, int y, 
     dst.w = w;
     dst.h = h;
     int ret = 0;
-    ret = SDL_RenderCopy(ren, tex, NULL, &dst);
+    ret = SDL_RenderCopyEx(ren, tex, NULL, &dst, 0, 0, flip);
     if (ret != 0) {
         qDebug() << "SDL_RenderCopy Error: " << SDL_GetError();
     }
@@ -101,7 +102,7 @@ void SdlEvent::renderTexture(SDL_Texture *tex, SDL_Renderer *ren, int x, int y, 
 void SdlEvent::renderTexture(SDL_Texture *tex, SDL_Renderer *ren, int x, int y) {
     int w, h;
     SDL_QueryTexture(tex, NULL, NULL, &w, &h);
-    renderTexture(tex, ren, x, y, w, h);
+    renderTexture(tex, ren, x, y, w, h, SDL_FLIP_NONE);
 }
 
 SDL_Texture* SdlEvent::loadTexture(const std::string &file, SDL_Renderer *ren)
@@ -245,7 +246,7 @@ void SdlEvent::slot_render()
             int x = i % xTiles;
             int y = i / xTiles;
             renderTexture(background.texture, renderer, x * TILE_SIZE, 
-                y * TILE_SIZE , TILE_SIZE, TILE_SIZE);
+                y * TILE_SIZE , TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
         }
     }
     else if (1) {
@@ -260,7 +261,7 @@ void SdlEvent::slot_render()
 
 
         renderTexture(background.texture, renderer, background.leftTopX, 
-            background.leftTopY, background.width, background.height);
+            background.leftTopY, background.width, background.height, background.flip);
         renderTexture(image, renderer, 0, 0);
         SDL_Rect pic{ background.leftTopX, background.leftTopY, background.width, background.height};
         DrawSelected(renderer, pic);

@@ -81,7 +81,7 @@ private:
     * @param w The width of the texture to draw
     * @param h The height of the texture to draw
     */
-    void renderTexture(SDL_Texture *tex, SDL_Renderer *ren, int x, int y, int w, int h);
+    void renderTexture(SDL_Texture *tex, SDL_Renderer *ren, int x, int y, int w, int h, SDL_RendererFlip flip);
 
     /*
     * Draw an SDL_Texture to an SDL_Renderer at position x, y, preserving
