@@ -137,9 +137,19 @@ int top_center_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 int bottom_center_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 {
     int diffY = mouseEvent->y - sprite->previousY;
-    sprite->previousY = mouseEvent->y;
 
-    sprite->height += diffY;
+
+    // vertical flip
+    if ((sprite->height + diffY) < 0) {
+        sprite->flip ^= SDL_FLIP_VERTICAL;
+        sprite->height = -diffY - sprite->height;
+        sprite->leftTopY -= sprite->height;
+        sprite->selectedRect = TOP_CENTER_RECT;
+    }
+    else {
+        sprite->previousY = mouseEvent->y;
+        sprite->height += diffY;
+    }
 }
 
 int left_center_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
