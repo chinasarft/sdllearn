@@ -182,7 +182,16 @@ int right_center_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
     sprite->previousX = mouseEvent->x;
     sprite->previousY = mouseEvent->y;
 
-    sprite->width += diffX;
+    //horizon flip
+    if ((sprite->width + diffX) < 0) {
+        sprite->flip = SDL_FLIP_HORIZONTAL;
+        sprite->width = -diffX - sprite->width;
+        sprite->leftTopX += sprite->width;
+        sprite->selectedRect = LEFT_CENTER_RECT;
+    }
+    else {
+        sprite->width += diffX;
+    }
 }
 
 void sprite_response_mouse_move(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
