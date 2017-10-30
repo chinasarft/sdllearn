@@ -113,6 +113,14 @@ int right_bottom_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
     sprite->height += diffY;
 }
 
+static inline void flip_flag(Sprite * sprite, SDL_RendererFlip flip) 
+{
+    if (sprite->flip == SDL_FLIP_NONE)
+        sprite->flip = flip;
+    else
+        sprite->flip = SDL_FLIP_NONE;
+}
+
 int top_center_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 {
     int diffY = mouseEvent->y - sprite->previousY;
@@ -123,7 +131,7 @@ int top_center_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 
     // vertical flip
     if( (sprite->height - diffY) < 0){
-        sprite->flip ^= SDL_FLIP_VERTICAL;
+        flip_flag(sprite, SDL_FLIP_VERTICAL);
         sprite->leftTopY= sprite->leftTopY + sprite->height;
         sprite->height = diffY - sprite->height;
         sprite->selectedRect = BOTTOM_CENTER_RECT;
@@ -141,7 +149,7 @@ int bottom_center_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent
 
     // vertical flip
     if ((sprite->height + diffY) < 0) {
-        sprite->flip ^= SDL_FLIP_VERTICAL;
+        flip_flag(sprite, SDL_FLIP_VERTICAL);
         sprite->height = -diffY - sprite->height;
         sprite->leftTopY -= sprite->height;
         sprite->selectedRect = TOP_CENTER_RECT;
@@ -163,7 +171,7 @@ int left_center_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 
     //horizon flip
     if ((sprite->width - diffX) < 0) {
-        sprite->flip = SDL_FLIP_HORIZONTAL;
+        flip_flag(sprite, SDL_FLIP_HORIZONTAL);
         sprite->leftTopX += sprite->width;
         sprite->width = diffX - sprite->width;
         sprite->selectedRect = RIGHT_CENTER_RECT;
@@ -184,7 +192,7 @@ int right_center_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 
     //horizon flip
     if ((sprite->width + diffX) < 0) {
-        sprite->flip = SDL_FLIP_HORIZONTAL;
+        flip_flag(sprite, SDL_FLIP_HORIZONTAL);
         sprite->width = -diffX - sprite->width;
         sprite->leftTopX += sprite->width;
         sprite->selectedRect = LEFT_CENTER_RECT;
