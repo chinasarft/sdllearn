@@ -53,7 +53,7 @@ private:
     SDL_Window * window = nullptr;
     SDL_Renderer *renderer = nullptr;
     WorkerThread thread;
-    SDL_Texture *image = nullptr;
+    Sprite image;
     Sprite background ;
     bool mouseDown = false;
     int prex, prey;
@@ -81,7 +81,8 @@ private:
     * @param w The width of the texture to draw
     * @param h The height of the texture to draw
     */
-    void renderTexture(SDL_Texture *tex, SDL_Renderer *ren, int x, int y, int w, int h, SDL_RendererFlip flip);
+    void renderTexture(SDL_Texture *tex, SDL_Renderer *ren, int x, int y, int w, int h,
+        const double angle, const SDL_Point *center, SDL_RendererFlip flip);
 
     /*
     * Draw an SDL_Texture to an SDL_Renderer at position x, y, preserving

@@ -31,6 +31,8 @@ typedef struct{
     int isMousePressed;
     int selectedRect;
     SDL_Texture * texture;
+    double angle;
+    SDL_Point center;
     SDL_RendererFlip flip;
 }Sprite;
 

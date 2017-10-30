@@ -108,11 +108,49 @@ int left_top_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
     int diffX = mouseEvent->x - sprite->previousX;
     int diffY = mouseEvent->y - sprite->previousY;
 
-    move_sprite(sprite, mouseEvent);
+    int diffWidth = sprite->width - diffX;
+    int diffHeight = sprite->height - diffY;
 
-    sprite->width -= diffX;
-    sprite->height -= diffY;
+    if (diffWidth > 0 && diffHeight > 0) {
+        move_sprite(sprite, mouseEvent);
+        sprite->width -= diffX;
+        sprite->height -= diffY;
+        return 0;
+    }
 
+    sprite->previousX = mouseEvent->x;
+    sprite->previousY = mouseEvent->y;
+
+    if (diffWidth < 0 && diffHeight < 0) {
+
+        if (sprite->angle == 0) {
+            sprite->angle = 180;
+        }
+        else {
+            sprite->angle = 0;
+        }
+        sprite->center.x = sprite->leftTopX + sprite->width;
+        sprite->center.y = sprite->leftTopY + sprite->height;
+
+        sprite->leftTopX = sprite->center.x;
+        sprite->leftTopY = sprite->center.y;
+
+        sprite->width = diffX - sprite->width;
+        sprite->height = diffY - sprite->height;
+        sprite->selectedRect = RIGHT_BOTTOM_RECT;
+    }
+    else if (diffWidth < 0){
+        left_center_to_right_flip(sprite, diffX);
+        sprite->leftTopY += diffY;
+        sprite->height -= diffY;
+        sprite->selectedRect = RIGHT_TOP_RECT;
+    }
+    else if (diffHeight < 0) {
+        top_center_to_bottom_flip(sprite, diffY);
+        sprite->leftTopX += diffX;
+        sprite->width -= diffX;
+        sprite->selectedRect = LEFT_BOTTOM_RECT;
+    }
 }
 
 int left_bottom_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
@@ -123,10 +161,44 @@ int left_bottom_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
     sprite->previousX = mouseEvent->x;
     sprite->previousY = mouseEvent->y;
 
-    sprite->leftTopX = sprite->leftTopX + diffX;
+    int diffWidth = sprite->width - diffX;
+    int diffHeight = sprite->height + diffY;
 
-    sprite->width -= diffX;
-    sprite->height += diffY;
+    if (diffWidth < 0 && diffHeight < 0) {
+
+        if (sprite->angle == 0) {
+            sprite->angle = 180;
+        }
+        else {
+            sprite->angle = 0;
+        }
+        sprite->center.x = sprite->leftTopX + sprite->width;
+        sprite->center.y = sprite->leftTopY;
+
+        sprite->leftTopX += sprite->width;
+        sprite->width = diffX - sprite->width;
+
+        sprite->height = -diffY - sprite->height;
+        sprite->leftTopY += sprite->height;
+
+        sprite->selectedRect = RIGHT_TOP_RECT;
+    }
+    else if (diffWidth < 0){
+        right_center_to_left_flip(sprite, diffX);
+        sprite->height += diffY;
+        sprite->selectedRect = RIGHT_BOTTOM_RECT;
+    }
+    else if (diffHeight < 0) {
+        bottom_center_to_top_flip(sprite, diffY);
+        sprite->leftTopX += diffX;
+        sprite->width -= diffX;
+        sprite->selectedRect = LEFT_TOP_RECT;
+    }
+    else {
+        sprite->leftTopX = sprite->leftTopX + diffX;
+        sprite->width -= diffX;
+        sprite->height += diffY;
+    }
 }
 
 int right_top_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
@@ -137,10 +209,42 @@ int right_top_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
     sprite->previousX = mouseEvent->x;
     sprite->previousY = mouseEvent->y;
 
-    sprite->leftTopY = sprite->leftTopY + diffY;
+    int diffWidth = sprite->width + diffX;
+    int diffHeight = sprite->height - diffY;
 
-    sprite->width += diffX;
-    sprite->height -= diffY;
+    if (diffWidth < 0 && diffHeight < 0) {
+        if (sprite->angle == 0) {
+            sprite->angle = 180;
+        }
+        else {
+            sprite->angle = 180;
+        }
+        sprite->center.x = sprite->leftTopX;
+        sprite->center.y = sprite->leftTopY + sprite->height;
+
+        sprite->width = -diffX - sprite->width;
+        sprite->leftTopX -= sprite->width;
+
+        sprite->leftTopY += sprite->height;
+        sprite->height = diffY - sprite->height;
+
+        sprite->selectedRect = LEFT_BOTTOM_RECT;
+    }
+    else if (diffWidth < 0) {
+        left_center_to_right_flip(sprite, diffX);
+        sprite->height -= diffY;
+        sprite->selectedRect = LEFT_TOP_RECT;
+    }
+    else if (diffHeight < 0) {
+        top_center_to_bottom_flip(sprite, diffY);
+        sprite->width += diffX;
+        sprite->selectedRect = RIGHT_BOTTOM_RECT;
+    }
+    else {
+        sprite->leftTopY = sprite->leftTopY + diffY;
+        sprite->width += diffX;
+        sprite->height -= diffY;
+    }
 }
 
 int right_bottom_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
@@ -151,8 +255,38 @@ int right_bottom_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
     sprite->previousX = mouseEvent->x;
     sprite->previousY = mouseEvent->y;
 
-    sprite->width += diffX;
-    sprite->height += diffY;
+    if ((sprite->width + diffX < 0) && (sprite->height + diffY) < 0) {
+        if (sprite->angle == 0) {
+            sprite->angle = 180;
+        }
+        else {
+            sprite->angle = 0;
+        }
+        sprite->center.x = sprite->leftTopX;
+        sprite->center.y = sprite->leftTopY;
+
+        sprite->width = -diffX - sprite->width;
+        sprite->height = -diffY - sprite->height;
+
+        sprite->leftTopX += sprite->width;
+        sprite->leftTopY += sprite->height;
+
+        sprite->selectedRect = LEFT_TOP_RECT;
+    }
+    else if (sprite->width + diffX < 0){
+        right_center_to_left_flip(sprite, diffX);
+        sprite->height += diffY;
+        sprite->selectedRect = LEFT_BOTTOM_RECT;
+    }
+    else if (sprite->height + diffY < 0) {
+        bottom_center_to_top_flip(sprite, diffY);
+        sprite->width += diffX;
+        sprite->selectedRect = RIGHT_TOP_RECT;
+    }
+    else {
+        sprite->width += diffX;
+        sprite->height += diffY;
+    }
 }
 
 int top_center_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)

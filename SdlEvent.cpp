@@ -52,6 +52,8 @@ SdlEvent::SdlEvent(QWidget *parent)
         qDebug() << "SDL_Init Error: " << SDL_GetError();
     }
     memset(&background, 0, sizeof(background));
+    memset(&image, 0, sizeof(image));
+    //background.angle = 180;
 
     connect(&thread, SIGNAL(resultReady()), this, SLOT(slot_render()));
     thread.start();
@@ -68,7 +70,7 @@ SdlEvent::~SdlEvent()
         SDL_Quit();
     }
     //Destroy the various items
-    cleanup(background.texture, image);
+    cleanup(background.texture, image.texture);
     if (window) {
         cleanup(window);
     }
@@ -85,7 +87,7 @@ void SdlEvent::logSDLError(std::string str)
 }
 
 void SdlEvent::renderTexture(SDL_Texture *tex, SDL_Renderer *ren, int x, int y, int w, int h, 
-    SDL_RendererFlip flip) {
+    const double angle, const SDL_Point *center, SDL_RendererFlip flip) {
     //Setup the destination rectangle to be at the position we want
     SDL_Rect dst;
     dst.x = x;
@@ -93,7 +95,7 @@ void SdlEvent::renderTexture(SDL_Texture *tex, SDL_Renderer *ren, int x, int y, 
     dst.w = w;
     dst.h = h;
     int ret = 0;
-    ret = SDL_RenderCopyEx(ren, tex, NULL, &dst, 0, 0, flip);
+    ret = SDL_RenderCopyEx(ren, tex, NULL, &dst, angle, 0, flip);
     if (ret != 0) {
         qDebug() << "SDL_RenderCopy Error: " << SDL_GetError();
     }
@@ -102,7 +104,7 @@ void SdlEvent::renderTexture(SDL_Texture *tex, SDL_Renderer *ren, int x, int y, 
 void SdlEvent::renderTexture(SDL_Texture *tex, SDL_Renderer *ren, int x, int y) {
     int w, h;
     SDL_QueryTexture(tex, NULL, NULL, &w, &h);
-    renderTexture(tex, ren, x, y, w, h, SDL_FLIP_NONE);
+    renderTexture(tex, ren, x, y, w, h,0, 0, SDL_FLIP_NONE);
 }
 
 SDL_Texture* SdlEvent::loadTexture(const std::string &file, SDL_Renderer *ren)
@@ -156,10 +158,10 @@ void SdlEvent::on_pushButton_clicked()
     //The textures we'll be using
     const std::string resPath = "C:\\d\\render\\sdl_learn\\sdl_project\\SdlEvent\\";
     background.texture = loadTexture(resPath + "background.png", renderer);
-    image = loadTexture(resPath + "image.png", renderer);
+    image.texture = loadTexture(resPath + "image.png", renderer);
     //Make sure they both loaded ok
-    if (background.texture == nullptr || image == nullptr) {
-        cleanup(background.texture, image);
+    if (background.texture == nullptr || image.texture == nullptr) {
+        cleanup(background.texture, image.texture);
         return ;
     }
 
@@ -176,9 +178,9 @@ void SdlEvent::enableBlend()
     if (background.texture != nullptr) {
         SDL_SetTextureBlendMode(background.texture, SDL_BLENDMODE_BLEND);
     }
-    if (image != nullptr) {
-        SDL_SetTextureBlendMode(image, SDL_BLENDMODE_BLEND);
-        SDL_SetTextureAlphaMod(image, transparentValue);
+    if (image.texture != nullptr) {
+        SDL_SetTextureBlendMode(image.texture, SDL_BLENDMODE_BLEND);
+        SDL_SetTextureAlphaMod(image.texture, transparentValue);
     }
 }
 void SdlEvent::on_spinBox_valueChanged(int arg1)
@@ -246,7 +248,8 @@ void SdlEvent::slot_render()
             int x = i % xTiles;
             int y = i / xTiles;
             renderTexture(background.texture, renderer, x * TILE_SIZE, 
-                y * TILE_SIZE , TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+                y * TILE_SIZE , TILE_SIZE, TILE_SIZE,
+                background.angle, &background.center, SDL_FLIP_NONE);
         }
     }
     else if (1) {
@@ -261,8 +264,14 @@ void SdlEvent::slot_render()
 
 
         renderTexture(background.texture, renderer, background.leftTopX, 
-            background.leftTopY, background.width, background.height, background.flip);
-        renderTexture(image, renderer, 0, 0);
+            background.leftTopY, background.width, background.height,
+            background.angle, &background.center, background.flip);
+
+        renderTexture(image.texture, renderer, 0, 0);
+        auto p = SDL_Point{400, 400};
+        renderTexture(image.texture, renderer, 300, 300, 100, 100, 180, &p, SDL_FLIP_NONE);
+
+
         SDL_Rect pic{ background.leftTopX, background.leftTopY, background.width, background.height};
         DrawSelected(renderer, pic);
     }
@@ -272,10 +281,10 @@ void SdlEvent::slot_render()
         //We need the foreground image's width to properly compute the position
         //of it's top left corner so that the image will be centered
         int iW, iH;
-        SDL_QueryTexture(image, NULL, NULL, &iW, &iH);
+        SDL_QueryTexture(image.texture, NULL, NULL, &iW, &iH);
         int x = SCREEN_WIDTH / 2 - iW / 2;
         int y = SCREEN_HEIGHT / 2 - iH / 2;
-        renderTexture(image, renderer, x, y);
+        renderTexture(image.texture, renderer, x, y);
     }
 
     //Update the screen
