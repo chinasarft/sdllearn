@@ -5,6 +5,14 @@ int is_mouse_on_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
         && (mouseEvent->y > sprite->leftTopY) && (mouseEvent->y < sprite->leftTopY + sprite->height);
 }
 
+static inline void flip_flag(Sprite * sprite, SDL_RendererFlip flip)
+{
+    if (sprite->flip == SDL_FLIP_NONE)
+        sprite->flip = flip;
+    else
+        sprite->flip = SDL_FLIP_NONE;
+}
+
 static int is_mouse_on_left_top_rect(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 {
     return  (mouseEvent->x > sprite->leftTopX - RADIUS) && (mouseEvent->x < sprite->leftTopX + RADIUS)
@@ -54,6 +62,39 @@ static int is_mouse_on_right_bottom_rect(Sprite * sprite, SDL_MouseMotionEvent *
         && (mouseEvent->y > sprite->leftTopY + sprite->height - RADIUS) && (mouseEvent->y < sprite->leftTopY + sprite->height + RADIUS);
 }
 
+static int top_center_to_bottom_flip(Sprite * sprite, int diffY)
+{
+        flip_flag(sprite, SDL_FLIP_VERTICAL);
+        sprite->leftTopY= sprite->leftTopY + sprite->height;
+        sprite->height = diffY - sprite->height;
+        sprite->selectedRect = BOTTOM_CENTER_RECT;
+}
+
+static void bottom_center_to_top_flip(Sprite * sprite, int diffY)
+{
+        flip_flag(sprite, SDL_FLIP_VERTICAL);
+        sprite->height = -diffY - sprite->height;
+        sprite->leftTopY -= sprite->height;
+        sprite->selectedRect = TOP_CENTER_RECT;
+}
+
+static void left_center_to_right_flip(Sprite * sprite, int diffX)
+{
+        flip_flag(sprite, SDL_FLIP_HORIZONTAL);
+        sprite->leftTopX += sprite->width;
+        sprite->width = diffX - sprite->width;
+        sprite->selectedRect = RIGHT_CENTER_RECT;
+}
+
+static void right_center_to_left_flip(Sprite * sprite, int diffX)
+{
+        flip_flag(sprite, SDL_FLIP_HORIZONTAL);
+        sprite->width = -diffX - sprite->width;
+        sprite->leftTopX += sprite->width;
+        sprite->selectedRect = LEFT_CENTER_RECT;
+}
+
+
 int move_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 {
     sprite->leftTopX = (mouseEvent->x - sprite->previousX + sprite->leftTopX);
@@ -71,6 +112,7 @@ int left_top_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 
     sprite->width -= diffX;
     sprite->height -= diffY;
+
 }
 
 int left_bottom_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
@@ -113,28 +155,15 @@ int right_bottom_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
     sprite->height += diffY;
 }
 
-static inline void flip_flag(Sprite * sprite, SDL_RendererFlip flip) 
-{
-    if (sprite->flip == SDL_FLIP_NONE)
-        sprite->flip = flip;
-    else
-        sprite->flip = SDL_FLIP_NONE;
-}
-
 int top_center_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 {
     int diffY = mouseEvent->y - sprite->previousY;
 
     sprite->previousY = mouseEvent->y;
 
-
-
     // vertical flip
     if( (sprite->height - diffY) < 0){
-        flip_flag(sprite, SDL_FLIP_VERTICAL);
-        sprite->leftTopY= sprite->leftTopY + sprite->height;
-        sprite->height = diffY - sprite->height;
-        sprite->selectedRect = BOTTOM_CENTER_RECT;
+        top_center_to_bottom_flip(sprite, diffY);
     }
     else {
         sprite->leftTopY = sprite->leftTopY + diffY;
@@ -146,13 +175,9 @@ int bottom_center_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent
 {
     int diffY = mouseEvent->y - sprite->previousY;
 
-
     // vertical flip
     if ((sprite->height + diffY) < 0) {
-        flip_flag(sprite, SDL_FLIP_VERTICAL);
-        sprite->height = -diffY - sprite->height;
-        sprite->leftTopY -= sprite->height;
-        sprite->selectedRect = TOP_CENTER_RECT;
+        bottom_center_to_top_flip(sprite, diffY);
     }
     else {
         sprite->previousY = mouseEvent->y;
@@ -168,13 +193,9 @@ int left_center_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
     sprite->previousX = mouseEvent->x;
     sprite->previousY = mouseEvent->y;
 
-
     //horizon flip
     if ((sprite->width - diffX) < 0) {
-        flip_flag(sprite, SDL_FLIP_HORIZONTAL);
-        sprite->leftTopX += sprite->width;
-        sprite->width = diffX - sprite->width;
-        sprite->selectedRect = RIGHT_CENTER_RECT;
+        left_center_to_right_flip(sprite, diffX);
     }
     else {
         sprite->leftTopX += diffX;
@@ -192,10 +213,7 @@ int right_center_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 
     //horizon flip
     if ((sprite->width + diffX) < 0) {
-        flip_flag(sprite, SDL_FLIP_HORIZONTAL);
-        sprite->width = -diffX - sprite->width;
-        sprite->leftTopX += sprite->width;
-        sprite->selectedRect = LEFT_CENTER_RECT;
+        right_center_to_left_flip(sprite, diffX);
     }
     else {
         sprite->width += diffX;
