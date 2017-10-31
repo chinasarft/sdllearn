@@ -11,8 +11,8 @@ SdlEvent::SdlEvent(QWidget *parent)
         isSDLInitOk = true;
         qDebug() << "SDL_Init Error: " << SDL_GetError();
     }
-    memset(&background, 0, sizeof(background));
-    memset(&image, 0, sizeof(image));
+    init_sprite(&background);
+    init_sprite(&image);
     //background.angle = 180;
 
     connect(&thread, SIGNAL(resultReady()), this, SLOT(slot_render()));

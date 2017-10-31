@@ -129,6 +129,11 @@ static void right_center_to_left_flip(Sprite * sprite, int diffX)
         sprite->selectedRect = LEFT_CENTER_RECT;
 }
 
+void init_sprite(Sprite * sprite)
+{
+    memset(sprite, 0, sizeof(Sprite));
+    sprite->canvasIdx = -1;
+}
 
 int move_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 {

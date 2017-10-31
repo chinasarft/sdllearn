@@ -17,10 +17,7 @@ extern "C" {
 #define LEFT_CENTER_RECT 7
 #define RIGHT_CENTER_RECT 8
 #define MOVE_RECT 56
-typedef struct{
-    int width;
-    int height;
-}Canvas;
+
 typedef struct{
     int width;
     int height;
@@ -30,11 +27,13 @@ typedef struct{
     int previousY;
     int isSelected;
     int selectedRect;
+    int canvasIdx;
     SDL_Texture * texture;
     double angle;
     SDL_RendererFlip flip;
 }Sprite;
 
+void __declspec(dllexport) init_sprite(Sprite * sprite);
 int is_mouse_on_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent);
 extern void __declspec(dllexport) sprite_response_mouse_move(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent);
 void __declspec(dllexport) sprite_response_mouse_up(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent);
