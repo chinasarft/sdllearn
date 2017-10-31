@@ -28,7 +28,7 @@ typedef struct{
     int leftTopY;
     int previousX;
     int previousY;
-    int isMousePressed;
+    int isSelected;
     int selectedRect;
     SDL_Texture * texture;
     double angle;

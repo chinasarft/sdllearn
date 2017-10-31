@@ -128,6 +128,9 @@ void SdlEvent::on_pushButton_clicked()
     SDL_QueryTexture(background.texture, NULL, NULL, &background.width, &background.height);
     background.leftTopX = 0;
     background.leftTopY = 0;
+    SDL_QueryTexture(image.texture, NULL, NULL, &image.width, &image.height);
+    image.leftTopX = 0;
+    image.leftTopY = 0;
     return ;
 }
 
@@ -155,6 +158,8 @@ void SdlEvent::slot_render()
         qDebug() << "render................";
         return;
     }
+
+    Sprite * selectedSprite = nullptr;
     
     SDL_Event e;
     //A sleepy rendering loop, wait for 3 seconds and render and present the screen each time
@@ -167,19 +172,20 @@ void SdlEvent::slot_render()
             qDebug() << "event keydown...........";
             break;
         case SDL_MOUSEBUTTONDOWN:
+            image.isSelected = 0;
+            background.isSelected = 0;
             sprite_response_mouse_press(&background, &e.motion);
+            sprite_response_mouse_press(&image, &e.motion);
             break;
         case SDL_MOUSEBUTTONUP:
             sprite_response_mouse_up(&background, &e.motion);
-            
-            prex = 0;
-            prey = 0;
-            mouseDown = false;
+            sprite_response_mouse_up(&image, &e.motion);
             qDebug() << "event mouseup===============";
             
             break;
         case SDL_MOUSEMOTION:
             sprite_response_mouse_move(&background, &e.motion);
+            sprite_response_mouse_move(&image, &e.motion);
 
             break;
         default:
@@ -227,12 +233,17 @@ void SdlEvent::slot_render()
             background.leftTopY, background.width, background.height,
             background.angle, 0, background.flip);
 
-        renderTexture(image.texture, renderer, 0, 0);
-        auto p = SDL_Point{400, 400};
-        renderTexture(image.texture, renderer, 300, 300, 100, 100, 180, &p, SDL_FLIP_NONE);
+        renderTexture(image.texture, renderer, image.leftTopX, 
+            image.leftTopY, image.width, image.height,
+            image.angle, 0, image.flip);
 
 
-        draw_select_sprite(&background, renderer);
+        if (background.isSelected) {
+            draw_select_sprite(&background, renderer);
+        }
+        else if (image.isSelected) {
+            draw_select_sprite(&image, renderer);
+        }
     }
     else {
 

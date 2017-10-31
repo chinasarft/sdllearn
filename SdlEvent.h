@@ -55,8 +55,6 @@ private:
     WorkerThread thread;
     Sprite image;
     Sprite background ;
-    bool mouseDown = false;
-    int prex, prey;
     int transparentValue=180;
 
 protected:
