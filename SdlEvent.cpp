@@ -249,7 +249,7 @@ void SdlEvent::slot_render()
             int y = i / xTiles;
             renderTexture(background.texture, renderer, x * TILE_SIZE, 
                 y * TILE_SIZE , TILE_SIZE, TILE_SIZE,
-                background.angle, &background.center, SDL_FLIP_NONE);
+                background.angle, 0, SDL_FLIP_NONE);
         }
     }
     else if (1) {
@@ -265,7 +265,7 @@ void SdlEvent::slot_render()
 
         renderTexture(background.texture, renderer, background.leftTopX, 
             background.leftTopY, background.width, background.height,
-            background.angle, &background.center, background.flip);
+            background.angle, 0, background.flip);
 
         renderTexture(image.texture, renderer, 0, 0);
         auto p = SDL_Point{400, 400};

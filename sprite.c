@@ -5,12 +5,47 @@ int is_mouse_on_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
         && (mouseEvent->y > sprite->leftTopY) && (mouseEvent->y < sprite->leftTopY + sprite->height);
 }
 
-static inline void flip_flag(Sprite * sprite, SDL_RendererFlip flip)
+static inline void set_flip_angle(Sprite * sprite, SDL_RendererFlip flip)
 {
-    if (sprite->flip == SDL_FLIP_NONE)
-        sprite->flip = flip;
-    else
-        sprite->flip = SDL_FLIP_NONE;
+    if (sprite->angle > 179.9) {
+        if (flip == SDL_FLIP_HORIZONTAL) {
+            sprite->angle = 0;
+            sprite->flip = SDL_FLIP_VERTICAL;
+        }
+        else if (flip == SDL_FLIP_VERTICAL) {
+            sprite->angle = 0;
+            sprite->flip = SDL_FLIP_HORIZONTAL;
+        }
+        else {
+            sprite->flip = SDL_FLIP_NONE;
+        }
+    }
+    else {
+        if (sprite->flip == SDL_FLIP_NONE)
+            sprite->flip = flip;
+        else if (sprite->flip != flip) {
+            sprite->flip = SDL_FLIP_NONE;
+            sprite->angle = 180;
+        }
+        else {
+            sprite->flip = SDL_FLIP_NONE;
+        }
+    }
+}
+
+static inline void set_angle_flip(Sprite * sprite, double angle)
+{
+    sprite->angle -= angle;
+    if (sprite->flip != SDL_FLIP_NONE) {
+        if (sprite->angle > 179.9) {
+            if (sprite->flip == SDL_FLIP_HORIZONTAL) {
+                sprite->flip = SDL_FLIP_VERTICAL;
+            }
+            else if (sprite->flip == SDL_FLIP_VERTICAL) {
+                sprite->flip = SDL_FLIP_HORIZONTAL;
+            }
+        }
+    }
 }
 
 static int is_mouse_on_left_top_rect(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
@@ -64,7 +99,7 @@ static int is_mouse_on_right_bottom_rect(Sprite * sprite, SDL_MouseMotionEvent *
 
 static int top_center_to_bottom_flip(Sprite * sprite, int diffY)
 {
-        flip_flag(sprite, SDL_FLIP_VERTICAL);
+        set_flip_angle(sprite, SDL_FLIP_VERTICAL);
         sprite->leftTopY= sprite->leftTopY + sprite->height;
         sprite->height = diffY - sprite->height;
         sprite->selectedRect = BOTTOM_CENTER_RECT;
@@ -72,7 +107,7 @@ static int top_center_to_bottom_flip(Sprite * sprite, int diffY)
 
 static void bottom_center_to_top_flip(Sprite * sprite, int diffY)
 {
-        flip_flag(sprite, SDL_FLIP_VERTICAL);
+        set_flip_angle(sprite, SDL_FLIP_VERTICAL);
         sprite->height = -diffY - sprite->height;
         sprite->leftTopY -= sprite->height;
         sprite->selectedRect = TOP_CENTER_RECT;
@@ -80,7 +115,7 @@ static void bottom_center_to_top_flip(Sprite * sprite, int diffY)
 
 static void left_center_to_right_flip(Sprite * sprite, int diffX)
 {
-        flip_flag(sprite, SDL_FLIP_HORIZONTAL);
+        set_flip_angle(sprite, SDL_FLIP_HORIZONTAL);
         sprite->leftTopX += sprite->width;
         sprite->width = diffX - sprite->width;
         sprite->selectedRect = RIGHT_CENTER_RECT;
@@ -88,7 +123,7 @@ static void left_center_to_right_flip(Sprite * sprite, int diffX)
 
 static void right_center_to_left_flip(Sprite * sprite, int diffX)
 {
-        flip_flag(sprite, SDL_FLIP_HORIZONTAL);
+        set_flip_angle(sprite, SDL_FLIP_HORIZONTAL);
         sprite->width = -diffX - sprite->width;
         sprite->leftTopX += sprite->width;
         sprite->selectedRect = LEFT_CENTER_RECT;
@@ -121,6 +156,8 @@ int left_top_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
     sprite->previousX = mouseEvent->x;
     sprite->previousY = mouseEvent->y;
 
+    int isFliped = (int)sprite->flip;
+
     if (diffWidth < 0 && diffHeight < 0) {
 
         if (sprite->angle == 0) {
@@ -129,11 +166,8 @@ int left_top_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
         else {
             sprite->angle = 0;
         }
-        sprite->center.x = sprite->leftTopX + sprite->width;
-        sprite->center.y = sprite->leftTopY + sprite->height;
-
-        sprite->leftTopX = sprite->center.x;
-        sprite->leftTopY = sprite->center.y;
+        sprite->leftTopX = sprite->leftTopX + sprite->width;
+        sprite->leftTopY = sprite->leftTopY + sprite->height;
 
         sprite->width = diffX - sprite->width;
         sprite->height = diffY - sprite->height;
@@ -144,12 +178,18 @@ int left_top_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
         sprite->leftTopY += diffY;
         sprite->height -= diffY;
         sprite->selectedRect = RIGHT_TOP_RECT;
+        if (isFliped) {
+            sprite->angle = 180;
+        }
     }
     else if (diffHeight < 0) {
         top_center_to_bottom_flip(sprite, diffY);
         sprite->leftTopX += diffX;
         sprite->width -= diffX;
         sprite->selectedRect = LEFT_BOTTOM_RECT;
+        if (isFliped) {
+            sprite->angle = 180;
+        }
     }
 }
 
@@ -164,6 +204,7 @@ int left_bottom_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
     int diffWidth = sprite->width - diffX;
     int diffHeight = sprite->height + diffY;
 
+    int isFliped = (int)sprite->flip;
     if (diffWidth < 0 && diffHeight < 0) {
 
         if (sprite->angle == 0) {
@@ -172,9 +213,6 @@ int left_bottom_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
         else {
             sprite->angle = 0;
         }
-        sprite->center.x = sprite->leftTopX + sprite->width;
-        sprite->center.y = sprite->leftTopY;
-
         sprite->leftTopX += sprite->width;
         sprite->width = diffX - sprite->width;
 
@@ -187,12 +225,18 @@ int left_bottom_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
         right_center_to_left_flip(sprite, diffX);
         sprite->height += diffY;
         sprite->selectedRect = RIGHT_BOTTOM_RECT;
+        if (isFliped) {
+            sprite->angle = 180;
+        }
     }
     else if (diffHeight < 0) {
         bottom_center_to_top_flip(sprite, diffY);
         sprite->leftTopX += diffX;
         sprite->width -= diffX;
         sprite->selectedRect = LEFT_TOP_RECT;
+        if (isFliped) {
+            sprite->angle = 180;
+        }
     }
     else {
         sprite->leftTopX = sprite->leftTopX + diffX;
@@ -212,6 +256,7 @@ int right_top_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
     int diffWidth = sprite->width + diffX;
     int diffHeight = sprite->height - diffY;
 
+    int isFliped = (int)sprite->flip;
     if (diffWidth < 0 && diffHeight < 0) {
         if (sprite->angle == 0) {
             sprite->angle = 180;
@@ -219,9 +264,6 @@ int right_top_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
         else {
             sprite->angle = 180;
         }
-        sprite->center.x = sprite->leftTopX;
-        sprite->center.y = sprite->leftTopY + sprite->height;
-
         sprite->width = -diffX - sprite->width;
         sprite->leftTopX -= sprite->width;
 
@@ -234,11 +276,17 @@ int right_top_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
         left_center_to_right_flip(sprite, diffX);
         sprite->height -= diffY;
         sprite->selectedRect = LEFT_TOP_RECT;
+        if (isFliped) {
+            sprite->angle = 180;
+        }
     }
     else if (diffHeight < 0) {
         top_center_to_bottom_flip(sprite, diffY);
         sprite->width += diffX;
         sprite->selectedRect = RIGHT_BOTTOM_RECT;
+        if (isFliped) {
+            sprite->angle = 180;
+        }
     }
     else {
         sprite->leftTopY = sprite->leftTopY + diffY;
@@ -255,6 +303,7 @@ int right_bottom_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
     sprite->previousX = mouseEvent->x;
     sprite->previousY = mouseEvent->y;
 
+    int isFliped = (int)sprite->flip;
     if ((sprite->width + diffX < 0) && (sprite->height + diffY) < 0) {
         if (sprite->angle == 0) {
             sprite->angle = 180;
@@ -262,8 +311,6 @@ int right_bottom_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
         else {
             sprite->angle = 0;
         }
-        sprite->center.x = sprite->leftTopX;
-        sprite->center.y = sprite->leftTopY;
 
         sprite->width = -diffX - sprite->width;
         sprite->height = -diffY - sprite->height;
@@ -277,11 +324,17 @@ int right_bottom_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
         right_center_to_left_flip(sprite, diffX);
         sprite->height += diffY;
         sprite->selectedRect = LEFT_BOTTOM_RECT;
+        if (isFliped) {
+            sprite->angle = 180;
+        }
     }
     else if (sprite->height + diffY < 0) {
         bottom_center_to_top_flip(sprite, diffY);
         sprite->width += diffX;
         sprite->selectedRect = RIGHT_TOP_RECT;
+        if (isFliped) {
+            sprite->angle = 180;
+        }
     }
     else {
         sprite->width += diffX;
