@@ -439,3 +439,44 @@ void sprite_response_mouse_up(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
     sprite->isMousePressed = 0;
     sprite->selectedRect = NONE_RECT;
 }
+
+void draw_select_sprite(Sprite * sprite, SDL_Renderer *renderer)
+{
+    SDL_Rect rect = {sprite->leftTopX, sprite->leftTopY, sprite->width, sprite->height};
+    int bc = 20;
+    Uint8 r, g, b, a;
+    SDL_GetRenderDrawColor(renderer, &r, &g, &b, &a);
+
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+
+    //lefttop
+    SDL_Rect rect1 = { rect.x - bc/2, rect.y - bc/2, bc, bc};
+    SDL_RenderDrawRect(renderer, &rect1);
+    //righttop
+    SDL_Rect rect2 = { rect.x + rect.w - bc/2, rect.y - bc/2, bc, bc};
+    SDL_RenderDrawRect(renderer, &rect2);
+
+    //leftbottom
+    SDL_Rect rect3 = { rect.x  - bc/2, rect.y + rect.h - bc/2, bc, bc};
+    SDL_RenderDrawRect(renderer, &rect3);
+    //rightbottom
+    SDL_Rect rect4 = { rect.x + rect.w - bc/2, rect.y + rect.h - bc/2, bc, bc};
+    SDL_RenderDrawRect(renderer, &rect4);
+
+    //leftcenter
+    SDL_Rect rect5 = { rect.x - bc/2, rect.y - bc/2 + rect.h/2, bc, bc};
+    SDL_RenderDrawRect(renderer, &rect5);
+    //rightcenter
+    SDL_Rect rect6 = { rect.x + rect.w - bc/2, rect.y - bc/2 + rect.h/2, bc, bc};
+    SDL_RenderDrawRect(renderer, &rect6);
+
+    //topcenter
+    SDL_Rect rect7 = { rect.x + rect.w/2  - bc/2, rect.y - bc/2, bc, bc};
+    SDL_RenderDrawRect(renderer, &rect7);
+    //bottomcenter
+    SDL_Rect rect8 = { rect.x + rect.w/2 - bc/2, rect.y + rect.h - bc/2, bc, bc};
+    SDL_RenderDrawRect(renderer, &rect8);
+
+
+    SDL_SetRenderDrawColor(renderer, r, g, b, a);
+}
