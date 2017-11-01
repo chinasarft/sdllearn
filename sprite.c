@@ -157,7 +157,7 @@ static void right_center_to_left_flip(Sprite * sprite, int diffX)
 {
         set_flip_angle(sprite, SDL_FLIP_HORIZONTAL);
         sprite->width = -diffX - sprite->width;
-        sprite->leftTopX += sprite->width;
+        sprite->leftTopX -= sprite->width;
         sprite->selectedRect = LEFT_CENTER_RECT;
 }
 
