@@ -60,25 +60,43 @@ void init_canvas(Canvas * canvas, int canvasWidth, int canvasHeight,
     set_draw_rect(canvas);
 }
 
-void clear_canvas(Canvas * canvas)
+void present_canvas(Canvas * canvas)
 {
-    if(is_canvas_same_ratio_as_window(canvas)){
-        SDL_RenderClear(canvas->renderer);
-        return;
+    if(!is_canvas_same_ratio_as_window(canvas)){
+        //pad color
+        Uint8 r, g, b, a;
+        SDL_GetRenderDrawColor(canvas->renderer, &r, &g, &b, &a);
+
+        SDL_SetRenderDrawColor(canvas->renderer, canvas->padColor.r, canvas->padColor.g, canvas->padColor.b, 255);
+
+        SDL_Rect rects[2] = { 0 };
+        if (canvas->drawRect.x == 0) {
+            rects[0].w = canvas->drawRect.w;
+            rects[0].h = canvas->drawRect.y;
+            rects[1].y = canvas->drawRect.y + canvas->drawRect.h;
+            rects[1].w = canvas->drawRect.w;
+            rects[1].h = canvas->drawRect.y;
+        }
+        else {
+            rects[0].w = canvas->drawRect.x;
+            rects[0].h = canvas->drawRect.h;
+            rects[1].x = canvas->drawRect.x + canvas->drawRect.w;
+            rects[1].w = canvas->drawRect.x;
+            rects[1].h = canvas->drawRect.h;
+        }
+        //draw rect
+        SDL_RenderFillRects(canvas->renderer, &rects, 2);
+
+        SDL_SetRenderDrawColor(canvas->renderer, r, g, b, a);
     }
 
-    //pad color
-    Uint8 r, g, b, a;
-    SDL_GetRenderDrawColor(canvas->renderer, &r, &g, &b, &a);
+    //Update the screen
+    SDL_RenderPresent(canvas->renderer);
+}
 
-    SDL_SetRenderDrawColor(canvas->renderer, canvas->padColor.r, canvas->padColor.g, canvas->padColor.b, 255);
+void clear_canvas(Canvas * canvas)
+{
     SDL_RenderClear(canvas->renderer);
-    // because a is 0 is fully transparency
-    SDL_SetRenderDrawColor(canvas->renderer, r, g, b, 255);
-
-    //draw rect
-    SDL_RenderFillRect(canvas->renderer, &canvas->drawRect);
-    SDL_SetRenderDrawColor(canvas->renderer, r, g, b, a);
 }
 
 void destroy_canvas(Canvas * canvas)
@@ -184,6 +202,5 @@ void draw_canvas(Canvas * canvas)
             s->angle, 0, s->flip);
     }
 
-    //Update the screen
-    SDL_RenderPresent(canvas->renderer);
+    present_canvas(canvas);
 }
