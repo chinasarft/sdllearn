@@ -16,7 +16,7 @@ extern "C" {
 //  |               |
 // 7|7     14     21|
 //  
-#define RADIUS 10
+#define RADIUS(s)  (10/s->scaleRatio)
 #define NONE_RECT 0
 #define MIDDLE_RECT 12
 #define LEFT_TOP_RECT 5
@@ -42,6 +42,7 @@ typedef struct{
     SDL_Texture * texture;
     double angle;
     SDL_RendererFlip flip;
+    float scaleRatio;
 }Sprite;
 
 void __declspec(dllexport) init_sprite(Sprite * sprite);
@@ -50,6 +51,7 @@ extern void __declspec(dllexport) sprite_response_mouse_move(Sprite * sprite, SD
 void __declspec(dllexport) sprite_response_mouse_up(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent);
 void __declspec(dllexport) sprite_response_mouse_press(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent);
 void __declspec(dllexport) draw_select_sprite(SDL_Rect * rect, SDL_Renderer *renderer);
+void sprite_set_scale_ratio(Sprite * sprite, float ratio);
 
 #ifdef __cplusplus
 }

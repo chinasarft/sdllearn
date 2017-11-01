@@ -33,6 +33,18 @@ static void set_draw_rect(Canvas * canvas)
     }
     canvas->drawRect.w = newWidth;
     canvas->drawRect.h = newHeight;
+    canvas->scaleRatio = canvas->drawRect.w / (float)(canvas->canvasWidth);
+}
+
+// TODO
+static int get_pixel_format_lenght(Uint32 pixelFormat)
+{
+    switch (pixelFormat) {
+    case SDL_PIXELFORMAT_RGB888:
+        return 0;
+
+    }
+    return 0;
 }
 
 void set_canvas_pad_color(Canvas * canvas, Uint8 r, Uint8 g, Uint8 b)
@@ -60,9 +72,19 @@ void init_canvas(Canvas * canvas, SDL_Renderer * renderer, SDL_Surface * surface
     canvas->container.sprites = (Sprite **)malloc(sizeof(Sprite*) * canvas->container.cap);
 
     set_draw_rect(canvas);
+
+    canvas->canvasTexture = SDL_CreateTexture(canvas->renderer, surface->format->format,
+        SDL_TEXTUREACCESS_TARGET, canvas->canvasWidth, canvas->canvasHeight);
 }
 
 void present_canvas(Canvas * canvas)
+{
+    //Update the screen
+    SDL_RenderPresent(canvas->renderer);
+}
+
+// not use now
+static void canvas_draw_padding(Canvas * canvas)
 {
     if(!is_canvas_same_ratio_as_window(canvas)){
         //pad color
@@ -92,13 +114,21 @@ void present_canvas(Canvas * canvas)
         SDL_SetRenderDrawColor(canvas->renderer, r, g, b, a);
     }
 
-    //Update the screen
-    SDL_RenderPresent(canvas->renderer);
 }
 
 void clear_canvas(Canvas * canvas)
 {
     SDL_RenderClear(canvas->renderer);
+}
+
+static void clear_canvas_with_pad_color(Canvas * canvas)
+{
+    Uint8 r, g, b, a;
+    SDL_GetRenderDrawColor(canvas->renderer, &r, &g, &b, &a);
+
+    SDL_SetRenderDrawColor(canvas->renderer, canvas->padColor.r, canvas->padColor.g, canvas->padColor.b, 255);
+    SDL_RenderClear(canvas->renderer);
+    SDL_SetRenderDrawColor(canvas->renderer, r, g, b, a);
 }
 
 void destroy_canvas(Canvas * canvas)
@@ -108,8 +138,7 @@ void destroy_canvas(Canvas * canvas)
 
 void add_sprite_to_canvas(Canvas * canvas, Sprite * sprite)
 {
-    sprite_set_location_point(sprite, canvas->drawRect.x, canvas->drawRect.y);
-
+    sprite_set_scale_ratio(sprite, canvas->scaleRatio);
     if (canvas->container.len == 0) {
         sprite->canvasIdx = 0;
         canvas->container.sprites[canvas->container.len++] = sprite;
@@ -143,10 +172,19 @@ void remove_sprite_from_canvas(Canvas * canvas, Sprite * sprite)
     return;
 }
 
+static void canvas_scale_mouse(Canvas * canvas, SDL_MouseMotionEvent *mouseEvent)
+{
+    mouseEvent->x -= canvas->drawRect.x;
+    mouseEvent->y -= canvas->drawRect.y;
+    mouseEvent->x /= canvas->scaleRatio;
+    mouseEvent->y /= canvas->scaleRatio;
+}
+
 void canvas_response_mouse_move(Canvas * canvas, SDL_MouseMotionEvent *mouseEvent)
 {
     int idx = canvas->container.selectedIdx;
     if (idx > -1) {
+        canvas_scale_mouse(canvas, mouseEvent);
         sprite_response_mouse_move(canvas->container.sprites[idx], mouseEvent);
     }
     return;
@@ -169,6 +207,7 @@ void canvas_response_mouse_press(Canvas * canvas, SDL_MouseMotionEvent *mouseEve
     if (idx > -1)
         sprites[idx]->isSelected = 0;
 
+    canvas_scale_mouse(canvas, mouseEvent);
     for (int i = 0; i < canvas->container.len; i++) {
         sprites[i]->isSelected = 0;
         sprite_response_mouse_press(sprites[i], mouseEvent);
@@ -181,10 +220,12 @@ void canvas_response_mouse_press(Canvas * canvas, SDL_MouseMotionEvent *mouseEve
 
 void draw_canvas(Canvas * canvas)
 {
-    clear_canvas(canvas);
-
     Sprite ** sprites = canvas->container.sprites;
     Sprite * selectedSprite = NULL;
+
+    SDL_SetRenderTarget(canvas->renderer, canvas->canvasTexture);
+    clear_canvas(canvas);
+
     for (int i = 0; i < canvas->container.len; i++) {
         Sprite * s = sprites[i];
         if (s->isSelected) {
@@ -199,9 +240,18 @@ void draw_canvas(Canvas * canvas)
     //SDL_RenderReadPixels(canvas->renderer, &canvas->drawRect,
     //    canvas->surface->format->format, NULL, canvas->surface->pitch);
 
+
+    SDL_SetRenderTarget(canvas->renderer, NULL);
+    clear_canvas_with_pad_color(canvas);
+
+    SDL_RenderCopy(canvas->renderer, canvas->canvasTexture, NULL, &canvas->drawRect);
+
     if (selectedSprite != NULL) {
-        SDL_Rect rect = {selectedSprite->leftTopX, selectedSprite->leftTopY,
-            selectedSprite->width, selectedSprite->height};
+        SDL_Rect rect = { selectedSprite->leftTopX * canvas->scaleRatio + canvas->drawRect.x,
+            selectedSprite->leftTopY * canvas->scaleRatio + canvas->drawRect.y,
+            selectedSprite->width * canvas->scaleRatio,
+            selectedSprite->height * canvas->scaleRatio
+        };
         draw_select_sprite(&rect, canvas->renderer, canvas->drawRect.x, canvas->drawRect.y);
     }
 

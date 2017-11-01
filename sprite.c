@@ -50,23 +50,23 @@ static inline void set_angle_flip(Sprite * sprite, double angle)
 
 static int is_mouse_on_left_rect_x(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 {
-    if ((mouseEvent->x > sprite->leftTopX - RADIUS) && (mouseEvent->x < sprite->leftTopX + RADIUS))
+    if ((mouseEvent->x > sprite->leftTopX - RADIUS(sprite)) && (mouseEvent->x < sprite->leftTopX + RADIUS(sprite)))
         return 1;
     return 0;
 }
 
 static int is_mouse_on_middle_rect_x(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 {
-    if ((mouseEvent->x > sprite->leftTopX + sprite->width / 2 - RADIUS) &&
-        (mouseEvent->x < sprite->leftTopX + sprite->width / 2 + RADIUS))
+    if ((mouseEvent->x > sprite->leftTopX + sprite->width / 2 - RADIUS(sprite)) &&
+        (mouseEvent->x < sprite->leftTopX + sprite->width / 2 + RADIUS(sprite)))
         return 2;
     return 0;
 }
 
 static int is_mouse_on_right_rect_x(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 {
-    if ((mouseEvent->x > sprite->leftTopX + sprite->width - RADIUS) &&
-        (mouseEvent->x < sprite->leftTopX + sprite->width + RADIUS))
+    if ((mouseEvent->x > sprite->leftTopX + sprite->width - RADIUS(sprite)) &&
+        (mouseEvent->x < sprite->leftTopX + sprite->width + RADIUS(sprite)))
         return 3;
     return 0;
 }
@@ -86,7 +86,7 @@ static int is_mouse_on_rect_x(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 static int is_mouse_on_top_rect_y(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 {
 
-    if ((mouseEvent->y > sprite->leftTopY - RADIUS) && (mouseEvent->y < sprite->leftTopY + RADIUS))
+    if ((mouseEvent->y > sprite->leftTopY - RADIUS(sprite)) && (mouseEvent->y < sprite->leftTopY + RADIUS(sprite)))
         return 5;
     return 0;
 }
@@ -94,16 +94,16 @@ static int is_mouse_on_top_rect_y(Sprite * sprite, SDL_MouseMotionEvent *mouseEv
 static int is_mouse_on_middle_rect_y(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 {
 
-    if ((mouseEvent->y > sprite->leftTopY + sprite->height / 2 - RADIUS) &&
-        (mouseEvent->y < sprite->leftTopY + sprite->height / 2 + RADIUS))
+    if ((mouseEvent->y > sprite->leftTopY + sprite->height / 2 - RADIUS(sprite)) &&
+        (mouseEvent->y < sprite->leftTopY + sprite->height / 2 + RADIUS(sprite)))
         return 6;
     return 0;
 }
 
 static int is_mouse_on_bottom_rect_y(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 {
-    if ((mouseEvent->y > sprite->leftTopY + sprite->height - RADIUS) &&
-        (mouseEvent->y < sprite->leftTopY + sprite->height + RADIUS))
+    if ((mouseEvent->y > sprite->leftTopY + sprite->height - RADIUS(sprite)) &&
+        (mouseEvent->y < sprite->leftTopY + sprite->height + RADIUS(sprite)))
         return 7;
     return 0;
 }
@@ -165,6 +165,7 @@ void init_sprite(Sprite * sprite)
 {
     memset(sprite, 0, sizeof(Sprite));
     sprite->canvasIdx = -1;
+    sprite->scaleRatio = 1.0;
 }
 
 int move_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
@@ -498,4 +499,9 @@ void draw_select_sprite(SDL_Rect * rect, SDL_Renderer *renderer)
 
 
     SDL_SetRenderDrawColor(renderer, r, g, b, a);
+}
+
+void sprite_set_scale_ratio(Sprite * sprite, float ratio)
+{
+    sprite->scaleRatio = ratio;
 }
