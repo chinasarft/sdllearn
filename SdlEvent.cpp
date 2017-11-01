@@ -108,8 +108,15 @@ void SdlEvent::on_pushButton_clicked()
         }
     }
 
+    SDL_Renderer * r;
+    r = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    if (r == nullptr) {
+        logSDLError("CreateRenderer");
+        return;
+    }
+
     SDL_Surface * surface = SDL_GetWindowSurface(window);
-    init_canvas(&canvas,surface, 1280, 720, ui.label->width(), ui.label->height());
+    init_canvas(&canvas, r ,surface, 1280, 720, ui.label->width(), ui.label->height());
     set_canvas_pad_color(&canvas, 57, 58, 57);
 
     Uint32 winPf = SDL_GetWindowPixelFormat(window);
@@ -120,13 +127,6 @@ void SdlEvent::on_pushButton_clicked()
     else
         qDebug() << "winPf name:"<<SDL_GetPixelFormatName(winPf) << " surPf name:"<< SDL_GetPixelFormatName(surPf);
 
-    if (canvas.renderer == nullptr) {
-        canvas.renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-        if (canvas.renderer == nullptr) {
-            logSDLError("CreateRenderer");
-            return;
-        }
-    }
 
     //The textures we'll be using
     const std::string resPath = "C:\\d\\render\\sdl_learn\\sdl_project\\SdlEvent\\";
