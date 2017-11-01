@@ -109,10 +109,8 @@ void SdlEvent::on_pushButton_clicked()
     }
 
     SDL_Surface * surface = SDL_GetWindowSurface(window);
-    init_canvas(&canvas,surface, 16, 9, ui.label->width(), ui.label->height());
+    init_canvas(&canvas,surface, 1280, 720, ui.label->width(), ui.label->height());
     set_canvas_pad_color(&canvas, 57, 58, 57);
-    add_sprite_to_canvas(&canvas, &background);
-    add_sprite_to_canvas(&canvas, &image);
 
     Uint32 winPf = SDL_GetWindowPixelFormat(window);
     Uint32 surPf = surface->format->format;
@@ -142,6 +140,10 @@ void SdlEvent::on_pushButton_clicked()
 
     SDL_QueryTexture(background.texture, NULL, NULL, &background.width, &background.height);
     SDL_QueryTexture(image.texture, NULL, NULL, &image.width, &image.height);
+
+    add_sprite_to_canvas(&canvas, &image);
+    add_sprite_to_canvas(&canvas, &background);
+
     return ;
 }
 
