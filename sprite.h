@@ -6,16 +6,27 @@ extern "C" {
 #endif
 
 
+//   1      2      3
+//  _________________
+// 5|5     10     15|
+//  |               |
+//  |               |
+// 6|6     12     18|
+//  |               |
+//  |               |
+// 7|7     14     21|
+//  
 #define RADIUS 10
 #define NONE_RECT 0
-#define LEFT_TOP_RECT 1
-#define LEFT_BOTTOM_RECT 2
-#define RIGHT_TOP_RECT 3
-#define RIGHT_BOTTOM_RECT 4
-#define TOP_CENTER_RECT 5
-#define BOTTOM_CENTER_RECT 6
-#define LEFT_CENTER_RECT 7
-#define RIGHT_CENTER_RECT 8
+#define MIDDLE_RECT 12
+#define LEFT_TOP_RECT 5
+#define LEFT_BOTTOM_RECT 7
+#define RIGHT_TOP_RECT 15
+#define RIGHT_BOTTOM_RECT 21
+#define TOP_CENTER_RECT 10
+#define BOTTOM_CENTER_RECT 14
+#define LEFT_CENTER_RECT 6
+#define RIGHT_CENTER_RECT 18
 #define MOVE_RECT 56
 
 typedef struct{

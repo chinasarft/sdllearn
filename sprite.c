@@ -48,53 +48,85 @@ static inline void set_angle_flip(Sprite * sprite, double angle)
     }
 }
 
-static int is_mouse_on_left_top_rect(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
+static int is_mouse_on_left_rect_x(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 {
-    return  (mouseEvent->x > sprite->leftTopX - RADIUS) && (mouseEvent->x < sprite->leftTopX + RADIUS)
-        && (mouseEvent->y > sprite->leftTopY - RADIUS) && (mouseEvent->y < sprite->leftTopY + RADIUS);
+    if ((mouseEvent->x > sprite->leftTopX - RADIUS) && (mouseEvent->x < sprite->leftTopX + RADIUS))
+        return 1;
+    return 0;
 }
 
-static int is_mouse_on_right_top_rect(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
+static int is_mouse_on_middle_rect_x(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 {
-    return  (mouseEvent->x > sprite->leftTopX + sprite->width + - RADIUS) && (mouseEvent->x < sprite->leftTopX + sprite->width + RADIUS)
-        && (mouseEvent->y > sprite->leftTopY - RADIUS) && (mouseEvent->y < sprite->leftTopY + RADIUS);
+    if ((mouseEvent->x > sprite->leftTopX + sprite->width / 2 - RADIUS) &&
+        (mouseEvent->x < sprite->leftTopX + sprite->width / 2 + RADIUS))
+        return 2;
+    return 0;
 }
 
-static int is_mouse_on_left_bottom_rect(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
+static int is_mouse_on_right_rect_x(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 {
-    return  (mouseEvent->x > sprite->leftTopX - RADIUS) && (mouseEvent->x < sprite->leftTopX + RADIUS)
-        && (mouseEvent->y > sprite->leftTopY + sprite->height - RADIUS) && (mouseEvent->y < sprite->leftTopY + sprite->height + RADIUS);
+    if ((mouseEvent->x > sprite->leftTopX + sprite->width - RADIUS) &&
+        (mouseEvent->x < sprite->leftTopX + sprite->width + RADIUS))
+        return 3;
+    return 0;
 }
 
-static int is_mouse_on_top_center(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
+static int is_mouse_on_rect_x(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 {
-    return  (mouseEvent->x > sprite->leftTopX + sprite->width/2 - RADIUS) && (mouseEvent->x < sprite->leftTopX + sprite->width/2 + RADIUS)
-        && (mouseEvent->y > sprite->leftTopY - RADIUS) && (mouseEvent->y < sprite->leftTopY + RADIUS);
+    int x;
+    if (x = is_mouse_on_left_rect_x(sprite, mouseEvent))
+        return x;
+    else if ((x = is_mouse_on_middle_rect_x(sprite, mouseEvent)))
+        return x;
+    else if ((x = is_mouse_on_right_rect_x(sprite, mouseEvent)))
+        return x;
+    return 0;
 }
 
-static int is_mouse_on_bottom_center(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
+static int is_mouse_on_top_rect_y(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 {
-    return  (mouseEvent->x > sprite->leftTopX + sprite->width / 2 - RADIUS) && (mouseEvent->x < sprite->leftTopX + sprite->width / 2 + RADIUS)
-        && (mouseEvent->y > sprite->leftTopY + sprite->height - RADIUS) && (mouseEvent->y < sprite->leftTopY + sprite->height + RADIUS);
+
+    if ((mouseEvent->y > sprite->leftTopY - RADIUS) && (mouseEvent->y < sprite->leftTopY + RADIUS))
+        return 5;
+    return 0;
 }
 
-static int is_mouse_on_left_center(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
+static int is_mouse_on_middle_rect_y(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 {
-    return  (mouseEvent->x > sprite->leftTopX - RADIUS) && (mouseEvent->x < sprite->leftTopX + RADIUS)
-        && (mouseEvent->y > sprite->leftTopY + sprite->height/2 - RADIUS) && (mouseEvent->y < sprite->leftTopY + sprite->height/2 + RADIUS);
+
+    if ((mouseEvent->y > sprite->leftTopY + sprite->height / 2 - RADIUS) &&
+        (mouseEvent->y < sprite->leftTopY + sprite->height / 2 + RADIUS))
+        return 6;
+    return 0;
 }
 
-static int is_mouse_on_right_center(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
+static int is_mouse_on_bottom_rect_y(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 {
-    return  (mouseEvent->x > sprite->leftTopX + sprite->width - RADIUS) && (mouseEvent->x < sprite->leftTopX + sprite->width + RADIUS)
-        && (mouseEvent->y > sprite->leftTopY + sprite->height/2 - RADIUS) && (mouseEvent->y < sprite->leftTopY + sprite->height/2 + RADIUS);
+    if ((mouseEvent->y > sprite->leftTopY + sprite->height - RADIUS) &&
+        (mouseEvent->y < sprite->leftTopY + sprite->height + RADIUS))
+        return 7;
+    return 0;
 }
 
-
-static int is_mouse_on_right_bottom_rect(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
+static int is_mouse_on_rect_y(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 {
-    return  (mouseEvent->x > sprite->leftTopX + sprite->width + - RADIUS) && (mouseEvent->x < sprite->leftTopX + sprite->width + RADIUS)
-        && (mouseEvent->y > sprite->leftTopY + sprite->height - RADIUS) && (mouseEvent->y < sprite->leftTopY + sprite->height + RADIUS);
+    int y;
+    if (y = is_mouse_on_top_rect_y(sprite, mouseEvent))
+        return y;
+    else if ((y = is_mouse_on_middle_rect_y(sprite, mouseEvent)))
+        return y;
+    else if ((y = is_mouse_on_bottom_rect_y(sprite, mouseEvent)))
+        return y;
+    return 0;
+}
+
+static int locate_scale_rect(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
+{
+    int x = is_mouse_on_rect_x(sprite, mouseEvent);
+    if (x == 0)
+        return 0;
+    int y = is_mouse_on_rect_y(sprite, mouseEvent);
+    return x * y;
 }
 
 static int top_center_to_bottom_flip(Sprite * sprite, int diffY)
@@ -403,30 +435,9 @@ void sprite_response_mouse_move(Sprite * sprite, SDL_MouseMotionEvent *mouseEven
 
 void sprite_response_mouse_press(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 {
-    if (is_mouse_on_left_top_rect(sprite, mouseEvent)) {
-        sprite->selectedRect = LEFT_TOP_RECT;
-    }
-    else if (is_mouse_on_left_bottom_rect(sprite, mouseEvent)) {
-        sprite->selectedRect = LEFT_BOTTOM_RECT;
-    }
-    else if (is_mouse_on_right_top_rect(sprite, mouseEvent)) {
-        sprite->selectedRect = RIGHT_TOP_RECT;
-    }
-    else if (is_mouse_on_right_bottom_rect(sprite, mouseEvent)) {
-        sprite->selectedRect = RIGHT_BOTTOM_RECT;
-    }
-    else if (is_mouse_on_top_center(sprite, mouseEvent)) {
-        sprite->selectedRect = TOP_CENTER_RECT;
-    }
-    else if (is_mouse_on_bottom_center(sprite, mouseEvent)) {
-        sprite->selectedRect = BOTTOM_CENTER_RECT;
-    }
-    else if (is_mouse_on_left_center(sprite, mouseEvent)) {
-        sprite->selectedRect = LEFT_CENTER_RECT;
-    }
-    else if (is_mouse_on_right_center(sprite, mouseEvent)) {
-        sprite->selectedRect = RIGHT_CENTER_RECT;
-    }
+    sprite->selectedRect = locate_scale_rect(sprite, mouseEvent);
+    if(sprite->selectedRect == MIDDLE_RECT)
+        sprite->selectedRect = MOVE_RECT;
     else if (is_mouse_on_sprite(sprite, mouseEvent)) {
         sprite->selectedRect = MOVE_RECT;
     }
