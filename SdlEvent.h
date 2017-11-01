@@ -5,7 +5,8 @@
 #include <QDebug>
 #include <QThread>
 #define SDL_MAIN_HANDLED  
-#include <sprite.h>
+#include "sprite.h"
+#include "canvas.h"
 #include <SDL_image.h>
 
 class WorkerThread : public QThread
@@ -51,10 +52,10 @@ private:
     bool isSDLInitOk;
     int btnCnt;
     SDL_Window * window = nullptr;
-    SDL_Renderer *renderer = nullptr;
     WorkerThread thread;
     Sprite image;
     Sprite background ;
+    Canvas canvas;
     int transparentValue=180;
 
 protected:

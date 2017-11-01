@@ -13,6 +13,7 @@ SdlEvent::SdlEvent(QWidget *parent)
     }
     init_sprite(&background);
     init_sprite(&image);
+    memset(&canvas, 0, sizeof(Canvas));
     //background.angle = 180;
 
     connect(&thread, SIGNAL(resultReady()), this, SLOT(slot_render()));
@@ -98,6 +99,10 @@ void SdlEvent::cleanup(SDL_Texture* tex1, SDL_Texture * tex2)
 
 void SdlEvent::on_pushButton_clicked()
 {
+    init_canvas(&canvas, 16, 9, ui.label->width(), ui.label->height());
+    set_canvas_pad_color(&canvas, 57, 58, 57);
+    add_sprite_to_canvas(&canvas, &background);
+    add_sprite_to_canvas(&canvas, &image);
     //Setup our window and renderer
     if (window == nullptr) {
         window = SDL_CreateWindowFrom((HWND)ui.label->winId());
@@ -107,9 +112,9 @@ void SdlEvent::on_pushButton_clicked()
         }
     }
 
-    if (renderer == nullptr) {
-        renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-        if (renderer == nullptr) {
+    if (canvas.renderer == nullptr) {
+        canvas.renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+        if (canvas.renderer == nullptr) {
             logSDLError("CreateRenderer");
             return;
         }
@@ -117,8 +122,8 @@ void SdlEvent::on_pushButton_clicked()
 
     //The textures we'll be using
     const std::string resPath = "C:\\d\\render\\sdl_learn\\sdl_project\\SdlEvent\\";
-    background.texture = loadTexture(resPath + "background.png", renderer);
-    image.texture = loadTexture(resPath + "image.png", renderer);
+    background.texture = loadTexture(resPath + "background.png", canvas.renderer);
+    image.texture = loadTexture(resPath + "image.png", canvas.renderer);
     //Make sure they both loaded ok
     if (background.texture == nullptr || image.texture == nullptr) {
         cleanup(background.texture, image.texture);
@@ -136,8 +141,8 @@ void SdlEvent::on_pushButton_clicked()
 
 void SdlEvent::enableBlend()
 {
-    if(renderer != nullptr)
-    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    if(canvas.renderer != nullptr)
+    SDL_SetRenderDrawBlendMode(canvas.renderer, SDL_BLENDMODE_BLEND);
     if (background.texture != nullptr) {
         SDL_SetTextureBlendMode(background.texture, SDL_BLENDMODE_BLEND);
     }
@@ -154,7 +159,7 @@ void SdlEvent::on_spinBox_valueChanged(int arg1)
 
 void SdlEvent::slot_render()
 {
-    if (renderer == nullptr) {
+    if (canvas.renderer == nullptr) {
         qDebug() << "render................";
         return;
     }
@@ -172,20 +177,15 @@ void SdlEvent::slot_render()
             qDebug() << "event keydown...........";
             break;
         case SDL_MOUSEBUTTONDOWN:
-            image.isSelected = 0;
-            background.isSelected = 0;
-            sprite_response_mouse_press(&background, &e.motion);
-            sprite_response_mouse_press(&image, &e.motion);
+            canvas_response_mouse_press(&canvas, &e.motion);
             break;
         case SDL_MOUSEBUTTONUP:
-            sprite_response_mouse_up(&background, &e.motion);
-            sprite_response_mouse_up(&image, &e.motion);
+            canvas_response_mouse_up(&canvas, &e.motion);
             qDebug() << "event mouseup===============";
             
             break;
         case SDL_MOUSEMOTION:
-            sprite_response_mouse_move(&background, &e.motion);
-            sprite_response_mouse_move(&image, &e.motion);
+            canvas_response_mouse_move(&canvas, &e.motion);
 
             break;
         default:
@@ -200,9 +200,6 @@ void SdlEvent::slot_render()
     int SCREEN_HEIGHT = ui.label->height()/2;
     int TILE_SIZE = 40;
 
-    //Clear the window
-    SDL_RenderClear(renderer);
-
     //Determine how many tiles we'll need to fill the screen
     int xTiles = SCREEN_WIDTH / TILE_SIZE;
     int yTiles = SCREEN_HEIGHT / TILE_SIZE;
@@ -213,7 +210,7 @@ void SdlEvent::slot_render()
         for (int i = 0; i < xTiles * yTiles; ++i) {
             int x = i % xTiles;
             int y = i / xTiles;
-            renderTexture(background.texture, renderer, x * TILE_SIZE, 
+            renderTexture(background.texture, canvas.renderer, x * TILE_SIZE, 
                 y * TILE_SIZE , TILE_SIZE, TILE_SIZE,
                 background.angle, 0, SDL_FLIP_NONE);
         }
@@ -221,29 +218,18 @@ void SdlEvent::slot_render()
     else if (1) {
         enableBlend();
 
+        draw_canvas(&canvas);
+
+        //draw a read rect
         SDL_Rect rect{ 400, 400, 100, 100 };
         Uint8 r, g, b, a;
-        SDL_GetRenderDrawColor(renderer, &r, &g, &b, &a);
-        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-        SDL_RenderDrawRect(renderer, &rect);
-        SDL_SetRenderDrawColor(renderer, r, g, b, a);
+        SDL_GetRenderDrawColor(canvas.renderer, &r, &g, &b, &a);
+        SDL_SetRenderDrawColor(canvas.renderer, 255, 0, 0, 255);
+        //SDL_RenderDrawRect (canvas.renderer, &rect);
+        SDL_RenderFillRect (canvas.renderer, &rect);
+        SDL_SetRenderDrawColor(canvas.renderer, r, g, b, a);
+        //end draw red rect
 
-
-        renderTexture(background.texture, renderer, background.leftTopX, 
-            background.leftTopY, background.width, background.height,
-            background.angle, 0, background.flip);
-
-        renderTexture(image.texture, renderer, image.leftTopX, 
-            image.leftTopY, image.width, image.height,
-            image.angle, 0, image.flip);
-
-
-        if (background.isSelected) {
-            draw_select_sprite(&background, renderer);
-        }
-        else if (image.isSelected) {
-            draw_select_sprite(&image, renderer);
-        }
     }
     else {
 
@@ -254,9 +240,7 @@ void SdlEvent::slot_render()
         SDL_QueryTexture(image.texture, NULL, NULL, &iW, &iH);
         int x = SCREEN_WIDTH / 2 - iW / 2;
         int y = SCREEN_HEIGHT / 2 - iH / 2;
-        renderTexture(image.texture, renderer, x, y);
+        renderTexture(image.texture, canvas.renderer, x, y);
     }
 
-    //Update the screen
-    SDL_RenderPresent(renderer);
 }
