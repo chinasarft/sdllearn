@@ -88,6 +88,8 @@ void destroy_canvas(Canvas * canvas)
 
 void add_sprite_to_canvas(Canvas * canvas, Sprite * sprite)
 {
+    sprite_set_location_point(sprite, canvas->drawRect.x, canvas->drawRect.y);
+
     if (canvas->container.len == 0) {
         sprite->canvasIdx = 0;
         canvas->container.sprites[canvas->container.len++] = sprite;
@@ -171,17 +173,14 @@ void draw_canvas(Canvas * canvas)
 {
     clear_canvas(canvas);
 
-    int deltaX = canvas->drawRect.x;
-    int deltaY = canvas->drawRect.y;
-
     Sprite ** sprites = canvas->container.sprites;
     for (int i = 0; i < canvas->container.len; i++) {
         Sprite * s = sprites[i];
         if (s->isSelected) {
             draw_select_sprite(s, canvas->renderer, canvas->drawRect.x, canvas->drawRect.y);
         }
-        render_texture(s->texture, canvas->renderer, s->leftTopX + deltaX, 
-            s->leftTopY + deltaY, s->width, s->height,
+        render_texture(s->texture, canvas->renderer, s->leftTopX, 
+            s->leftTopY,  s->width, s->height,
             s->angle, 0, s->flip);
     }
 

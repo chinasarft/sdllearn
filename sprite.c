@@ -497,3 +497,9 @@ void draw_select_sprite(Sprite * sprite, SDL_Renderer *renderer)
 
     SDL_SetRenderDrawColor(renderer, r, g, b, a);
 }
+
+void __declspec(dllexport) sprite_set_location_point(Sprite * sprite, int topx, int topy)
+{
+    sprite->leftTopX = topx;
+    sprite->leftTopY = topy;
+}

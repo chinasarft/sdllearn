@@ -131,11 +131,7 @@ void SdlEvent::on_pushButton_clicked()
     }
 
     SDL_QueryTexture(background.texture, NULL, NULL, &background.width, &background.height);
-    background.leftTopX = 0;
-    background.leftTopY = 0;
     SDL_QueryTexture(image.texture, NULL, NULL, &image.width, &image.height);
-    image.leftTopX = 0;
-    image.leftTopY = 0;
     return ;
 }
 
