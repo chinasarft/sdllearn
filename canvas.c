@@ -42,13 +42,16 @@ void set_canvas_pad_color(Canvas * canvas, Uint8 r, Uint8 g, Uint8 b)
     canvas->padColor.b = b;
 }
 
-void init_canvas(Canvas * canvas, int canvasWidth, int canvasHeight,
+void init_canvas(Canvas * canvas, SDL_Surface * surface,
+    int canvasWidth, int canvasHeight,
     int windowWidth, int windowHeight)
 {
     canvas->canvasWidth = canvasWidth;
     canvas->canvasHeight = canvasHeight;
     canvas->windowWidth = windowWidth;
     canvas->windowHeight = windowHeight;
+
+    canvas->surface = surface;
 
     canvas->renderer = NULL;
 
@@ -205,6 +208,9 @@ void draw_canvas(Canvas * canvas)
     }
 
     //TODO get render pixels here
+    //SDL_GetWindowPixelFormat same as surface->format->format
+    //SDL_RenderReadPixels(canvas->renderer, &canvas->drawRect,
+    //    canvas->surface->format->format, NULL, canvas->surface->pitch);
 
     if(selectedSprite != NULL)
         draw_select_sprite(selectedSprite, canvas->renderer, canvas->drawRect.x, canvas->drawRect.y);

@@ -23,11 +23,13 @@ typedef struct{
         Uint8 b;
     }padColor;
     SDL_Rect drawRect;
+    SDL_Surface * surface;
 }Canvas;
 
 // canvasWidth: not real width. like 16
 // canvasHeight: not real height like 9
-void __declspec(dllexport) init_canvas(Canvas * canvas, int canvasWidth, int canvasHeight,
+void __declspec(dllexport) init_canvas(Canvas * canvas, SDL_Surface * surface,
+                                        int canvasWidth, int canvasHeight,
                                         int windowWidth, int windowHeight);
 void __declspec(dllexport) clear_canvas(Canvas * canvas);
 void __declspec(dllexport) destroy_canvas(Canvas * canvas);

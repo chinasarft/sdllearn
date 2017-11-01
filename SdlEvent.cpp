@@ -99,10 +99,6 @@ void SdlEvent::cleanup(SDL_Texture* tex1, SDL_Texture * tex2)
 
 void SdlEvent::on_pushButton_clicked()
 {
-    init_canvas(&canvas, 16, 9, ui.label->width(), ui.label->height());
-    set_canvas_pad_color(&canvas, 57, 58, 57);
-    add_sprite_to_canvas(&canvas, &background);
-    add_sprite_to_canvas(&canvas, &image);
     //Setup our window and renderer
     if (window == nullptr) {
         window = SDL_CreateWindowFrom((HWND)ui.label->winId());
@@ -111,6 +107,20 @@ void SdlEvent::on_pushButton_clicked()
             return;
         }
     }
+
+    SDL_Surface * surface = SDL_GetWindowSurface(window);
+    init_canvas(&canvas,surface, 16, 9, ui.label->width(), ui.label->height());
+    set_canvas_pad_color(&canvas, 57, 58, 57);
+    add_sprite_to_canvas(&canvas, &background);
+    add_sprite_to_canvas(&canvas, &image);
+
+    Uint32 winPf = SDL_GetWindowPixelFormat(window);
+    Uint32 surPf = surface->format->format;
+    qDebug() << "winPf:" << winPf << " surPf:" << surPf;
+    if(winPf == surPf)
+        qDebug() << "pixel format name:"<<SDL_GetPixelFormatName(winPf);
+    else
+        qDebug() << "winPf name:"<<SDL_GetPixelFormatName(winPf) << " surPf name:"<< SDL_GetPixelFormatName(surPf);
 
     if (canvas.renderer == nullptr) {
         canvas.renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
