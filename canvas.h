@@ -43,6 +43,7 @@ void __declspec(dllexport) canvas_response_mouse_up(Canvas * canvas, SDL_MouseMo
 void __declspec(dllexport) canvas_response_mouse_press(Canvas * canvas, SDL_MouseMotionEvent *mouseEvent);
 
 void draw_canvas(Canvas * canvas);
+void canvas_move_selected_sprite_to_top(Canvas * canvas);
 
 #ifdef __cplusplus
 }

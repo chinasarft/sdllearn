@@ -140,6 +140,7 @@ void remove_sprite_from_canvas(Canvas * canvas, Sprite * sprite)
     }
     return;
 }
+
 void canvas_response_mouse_move(Canvas * canvas, SDL_MouseMotionEvent *mouseEvent)
 {
     int idx = canvas->container.selectedIdx;
@@ -203,4 +204,20 @@ void draw_canvas(Canvas * canvas)
     }
 
     present_canvas(canvas);
+}
+
+void canvas_move_selected_sprite_to_top(Canvas * canvas)
+{
+    int idx = canvas->container.selectedIdx;
+    if (idx < 1) {
+        return;
+    }
+    Sprite * tmp = canvas->container.sprites[0];
+
+    canvas->container.sprites[idx]->canvasIdx = 0;
+    canvas->container.sprites[0] = canvas->container.sprites[idx];
+
+    tmp->canvasIdx = idx;
+    canvas->container.sprites[idx] = tmp;
+    return;
 }
