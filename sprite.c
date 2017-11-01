@@ -438,8 +438,10 @@ void sprite_response_mouse_press(Sprite * sprite, SDL_MouseMotionEvent *mouseEve
     sprite->selectedRect = locate_scale_rect(sprite, mouseEvent);
     if(sprite->selectedRect == MIDDLE_RECT)
         sprite->selectedRect = MOVE_RECT;
-    else if (is_mouse_on_sprite(sprite, mouseEvent)) {
-        sprite->selectedRect = MOVE_RECT;
+    else if(sprite->selectedRect == NONE_RECT){
+        if (is_mouse_on_sprite(sprite, mouseEvent)) {
+            sprite->selectedRect = MOVE_RECT;
+        }
     }
 
     if(sprite->selectedRect > NONE_RECT){

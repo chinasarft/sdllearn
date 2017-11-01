@@ -193,15 +193,21 @@ void draw_canvas(Canvas * canvas)
     clear_canvas(canvas);
 
     Sprite ** sprites = canvas->container.sprites;
+    Sprite * selectedSprite = NULL;
     for (int i = 0; i < canvas->container.len; i++) {
         Sprite * s = sprites[i];
         if (s->isSelected) {
-            draw_select_sprite(s, canvas->renderer, canvas->drawRect.x, canvas->drawRect.y);
+            selectedSprite = s;
         }
         render_texture(s->texture, canvas->renderer, s->leftTopX, 
             s->leftTopY,  s->width, s->height,
             s->angle, 0, s->flip);
     }
+
+    //TODO get render pixels here
+
+    if(selectedSprite != NULL)
+        draw_select_sprite(selectedSprite, canvas->renderer, canvas->drawRect.x, canvas->drawRect.y);
 
     present_canvas(canvas);
 }
