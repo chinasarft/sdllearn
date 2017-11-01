@@ -179,17 +179,6 @@ void canvas_response_mouse_press(Canvas * canvas, SDL_MouseMotionEvent *mouseEve
     }
 }
 
-static int render_texture(SDL_Texture *tex, SDL_Renderer *ren, int x, int y, int w, int h, 
-    const double angle, const SDL_Point *center, SDL_RendererFlip flip) {
-    //Setup the destination rectangle to be at the position we want
-    SDL_Rect dst;
-    dst.x = x;
-    dst.y = y;
-    dst.w = w;
-    dst.h = h;
-    return SDL_RenderCopyEx(ren, tex, NULL, &dst, angle, 0, flip);
-}
-
 void draw_canvas(Canvas * canvas)
 {
     clear_canvas(canvas);
@@ -201,9 +190,8 @@ void draw_canvas(Canvas * canvas)
         if (s->isSelected) {
             selectedSprite = s;
         }
-        render_texture(s->texture, canvas->renderer, s->leftTopX, 
-            s->leftTopY,  s->width, s->height,
-            s->angle, 0, s->flip);
+        SDL_Rect dst = { s->leftTopX, s->leftTopY,  s->width, s->height };
+        SDL_RenderCopyEx(canvas->renderer, s->texture, NULL, &dst, s->angle, 0, s->flip);
     }
 
     //TODO get render pixels here
@@ -211,8 +199,11 @@ void draw_canvas(Canvas * canvas)
     //SDL_RenderReadPixels(canvas->renderer, &canvas->drawRect,
     //    canvas->surface->format->format, NULL, canvas->surface->pitch);
 
-    if(selectedSprite != NULL)
-        draw_select_sprite(selectedSprite, canvas->renderer, canvas->drawRect.x, canvas->drawRect.y);
+    if (selectedSprite != NULL) {
+        SDL_Rect rect = {selectedSprite->leftTopX, selectedSprite->leftTopY,
+            selectedSprite->width, selectedSprite->height};
+        draw_select_sprite(&rect, canvas->renderer, canvas->drawRect.x, canvas->drawRect.y);
+    }
 
     present_canvas(canvas);
 }

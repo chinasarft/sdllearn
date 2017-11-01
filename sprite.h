@@ -49,8 +49,7 @@ int is_mouse_on_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent);
 extern void __declspec(dllexport) sprite_response_mouse_move(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent);
 void __declspec(dllexport) sprite_response_mouse_up(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent);
 void __declspec(dllexport) sprite_response_mouse_press(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent);
-void __declspec(dllexport) draw_select_sprite(Sprite * sprite, SDL_Renderer *renderer);
-void __declspec(dllexport) sprite_set_location_point(Sprite * sprite, int topx, int topy);
+void __declspec(dllexport) draw_select_sprite(SDL_Rect * rect, SDL_Renderer *renderer);
 
 #ifdef __cplusplus
 }
