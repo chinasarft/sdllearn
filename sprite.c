@@ -236,12 +236,12 @@ int left_bottom_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
         sprite->width = diffX - sprite->width;
 
         sprite->height = -diffY - sprite->height;
-        sprite->leftTopY += sprite->height;
+        sprite->leftTopY -= sprite->height;
 
         sprite->selectedRect = RIGHT_TOP_RECT;
     }
     else if (diffWidth < 0){
-        right_center_to_left_flip(sprite, diffX);
+        left_center_to_right_flip(sprite, diffX);
         sprite->height += diffY;
         sprite->selectedRect = RIGHT_BOTTOM_RECT;
     }
@@ -281,7 +281,8 @@ int right_top_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
         sprite->selectedRect = LEFT_BOTTOM_RECT;
     }
     else if (diffWidth < 0) {
-        left_center_to_right_flip(sprite, diffX);
+        right_center_to_left_flip(sprite, diffX);
+        sprite->leftTopY += diffY;
         sprite->height -= diffY;
         sprite->selectedRect = LEFT_TOP_RECT;
     }
@@ -311,8 +312,8 @@ int right_bottom_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
         sprite->width = -diffX - sprite->width;
         sprite->height = -diffY - sprite->height;
 
-        sprite->leftTopX += sprite->width;
-        sprite->leftTopY += sprite->height;
+        sprite->leftTopX -= sprite->width;
+        sprite->leftTopY -= sprite->height;
 
         sprite->selectedRect = LEFT_TOP_RECT;
     }
