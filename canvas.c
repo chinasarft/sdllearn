@@ -54,7 +54,7 @@ void set_canvas_pad_color(Canvas * canvas, Uint8 r, Uint8 g, Uint8 b)
     canvas->padColor.b = b;
 }
 
-void init_canvas(Canvas * canvas, SDL_Renderer * renderer, SDL_Surface * surface,
+int init_canvas(Canvas * canvas, SDL_Renderer * renderer, SDL_Surface * surface,
     int canvasWidth, int canvasHeight,
     int windowWidth, int windowHeight)
 {
@@ -73,8 +73,12 @@ void init_canvas(Canvas * canvas, SDL_Renderer * renderer, SDL_Surface * surface
 
     set_draw_rect(canvas);
 
-    canvas->canvasTexture = SDL_CreateTexture(canvas->renderer, surface->format->format,
+    canvas->targetTexture = SDL_CreateTexture(canvas->renderer, SDL_PIXELFORMAT_RGBA8888,
         SDL_TEXTUREACCESS_TARGET, canvas->canvasWidth, canvas->canvasHeight);
+    if (canvas->targetTexture == NULL) {
+        return -1;
+    }
+    return 0;
 }
 
 void present_canvas(Canvas * canvas)
@@ -254,12 +258,44 @@ void canvas_response_mouse_press(Canvas * canvas, SDL_MouseMotionEvent *mouseEve
     }
 }
 
+#include <stdio.h>
+FILE * file = NULL;
+void write_texture(Uint8 pixels, Uint32 format, int w, int h, int pitch)
+{
+    if (pixels == NULL)
+        return;
+    if (pitch < w)
+        pitch = 1280 * 4;
+    int len;
+    switch (format) {
+    case SDL_PIXELFORMAT_RGB888:
+        len = pitch * h;
+        break;
+    case SDL_PIXELFORMAT_RGBA8888:
+        len = pitch * h;
+        break;
+    case SDL_PIXELFORMAT_ABGR8888:
+        len = pitch * h;
+        break;
+    case SDL_PIXELFORMAT_BGRA8888:
+        len = pitch * h;
+        break;
+    }
+    if (file == NULL) {
+        file = fopen("mt.rgba", "w+");
+    }
+    if (file != NULL) {
+        fwrite(pixels, len, 1, file);
+        fflush(file);
+    }
+}
+
 void draw_canvas(Canvas * canvas)
 {
     Sprite ** sprites = canvas->container.sprites;
     Sprite * selectedSprite = NULL;
 
-    SDL_SetRenderTarget(canvas->renderer, canvas->canvasTexture);
+    SDL_SetRenderTarget(canvas->renderer, canvas->targetTexture);
     clear_canvas(canvas);
 
     for (int i = canvas->container.len - 1; i >= 0; i--) {
@@ -271,16 +307,42 @@ void draw_canvas(Canvas * canvas)
         SDL_RenderCopyEx(canvas->renderer, s->texture, NULL, &dst, s->angle, 0, s->flip);
     }
 
-    //TODO get render pixels here
-    //SDL_GetWindowPixelFormat same as surface->format->format
-    //SDL_RenderReadPixels(canvas->renderer, &canvas->drawRect,
-    //    canvas->surface->format->format, NULL, canvas->surface->pitch);
-
 
     SDL_SetRenderTarget(canvas->renderer, NULL);
     clear_canvas_with_pad_color(canvas);
 
-    SDL_RenderCopy(canvas->renderer, canvas->canvasTexture, NULL, &canvas->drawRect);
+    SDL_RenderCopy(canvas->renderer, canvas->targetTexture, NULL, &canvas->drawRect);
+
+    //TODO get render pixels here
+    //start--------------------------------------
+    // ps: window resolution is not equal canvas.so this is not a solution
+    //SDL_GetWindowPixelFormat same as surface->format->format
+    //SDL_RenderReadPixels(canvas->renderer, &canvas->drawRect,
+    //    canvas->surface->format->format, NULL, canvas->surface->pitch);
+    //end--------------------------------------
+
+    //start--------------------------------------
+    /*
+    // another method: SDL_LockTexture 
+    // problem is targe texture cannot lock
+    int access = 0, w = 0, h = 0, pitch = 0;
+    Uint32 format = 0;
+    Uint8 *pixels = NULL;
+    if (SDL_QueryTexture(canvas->targetTexture, &format, &access, &w, &h) == 0) {
+        if (SDL_LockTexture(canvas->targetTexture, NULL, &pixels, &pitch) == 0) {
+            write_texture(pixels, format, w, h, pitch, canvas->surface->format->format);
+            SDL_UnlockTexture(canvas->targetTexture);
+        }
+        else {
+            char * tmp = SDL_GetError();
+            w = 0;
+        }
+    }
+    else {
+        pitch = 5;
+    }
+    */
+    //end--------------------------------------
 
     if (selectedSprite != NULL) {
         SDL_Rect rect = { selectedSprite->leftTopX * canvas->scaleRatio + canvas->drawRect.x,

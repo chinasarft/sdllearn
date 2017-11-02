@@ -109,14 +109,18 @@ void SdlEvent::on_pushButton_clicked()
     }
 
     SDL_Renderer * r;
-    r = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    r = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED |
+        SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);
     if (r == nullptr) {
         logSDLError("CreateRenderer");
         return;
     }
 
     SDL_Surface * surface = SDL_GetWindowSurface(window);
-    init_canvas(&canvas, r ,surface, 1280, 720, ui.label->width(), ui.label->height());
+    if (init_canvas(&canvas, r, surface, 1280, 720, ui.label->width(), ui.label->height()) != 0) {
+        qDebug() << "init_canvas fail";
+        return;
+    }
     set_canvas_pad_color(&canvas, 57, 58, 57);
 
     Uint32 winPf = SDL_GetWindowPixelFormat(window);
