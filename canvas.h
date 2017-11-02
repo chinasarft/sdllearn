@@ -36,11 +36,13 @@ void __declspec(dllexport) init_canvas(Canvas * canvas, SDL_Renderer * renderer,
 void __declspec(dllexport) clear_canvas(Canvas * canvas);
 void __declspec(dllexport) destroy_canvas(Canvas * canvas);
 
-void add_sprite_to_canvas(Canvas * canvas, Sprite * sprite);
+int add_sprite_to_canvas(Canvas * canvas, Sprite * sprite);
 
-void remove_sprite_from_canvas(Canvas * canvas, Sprite * sprite);
+int remove_sprite_from_canvas(Canvas * canvas, Sprite * sprite);
 
 void set_canvas_pad_color(Canvas * canvas, Uint8 r, Uint8 g, Uint8 b);
+int canvas_insert_sprite(Canvas * canvas, Sprite * sprite, int insertIdx);
+int canvas_remote_sprite_by_index(Canvas * canvas, int removeIdx);
 
 void __declspec(dllexport) canvas_response_mouse_move(Canvas * canvas, SDL_MouseMotionEvent *mouseEvent);
 void __declspec(dllexport) canvas_response_mouse_up(Canvas * canvas, SDL_MouseMotionEvent *mouseEvent);

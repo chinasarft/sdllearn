@@ -136,40 +136,76 @@ void destroy_canvas(Canvas * canvas)
     //TODO mainly destroy texture
 }
 
-void add_sprite_to_canvas(Canvas * canvas, Sprite * sprite)
+static int canvas_realloc(Canvas *canvas)
 {
-    sprite_set_scale_ratio(sprite, canvas->scaleRatio);
-    if (canvas->container.len == 0) {
-        sprite->canvasIdx = 0;
-        canvas->container.sprites[canvas->container.len++] = sprite;
-        return;
-    }
     if (canvas->container.len == canvas->container.cap) {
-        sprite->canvasIdx = canvas->container.len;
         Sprite ** oldSprites = canvas->container.sprites;
+        Sprite ** newSprites = (Sprite **)malloc(sizeof(Sprite*) * canvas->container.cap * 2);
+        if (newSprites == NULL)
+            return -1;
         canvas->container.cap *= 2;
-        canvas->container.sprites = (Sprite **)malloc(sizeof(Sprite*) * canvas->container.cap);
-        memcpy(canvas->container.sprites + sizeof(Sprite*), oldSprites,
-            canvas->container.len * sizeof(Sprite *));
-        canvas->container.sprites[canvas->container.len++] = sprite;
-        return;
+        memcpy(newSprites, oldSprites, canvas->container.len * sizeof(Sprite *));
+        canvas->container.sprites = newSprites;
+        return 0 ;
     }
-    sprite->canvasIdx = canvas->container.len;
-    memmove(canvas->container.sprites + sizeof(Sprite*), canvas->container.sprites,
-        canvas->container.len * sizeof(Sprite *));
-    canvas->container.sprites[canvas->container.len++] = sprite;
-    return;
+    return 1;
 }
 
-void remove_sprite_from_canvas(Canvas * canvas, Sprite * sprite)
+int canvas_insert_sprite(Canvas * canvas, Sprite * sprite, int insertIdx)
+{
+    int ret;
+
+    if (insertIdx > canvas->container.len)
+        return -1;
+    
+    if ((ret = canvas_realloc(canvas)) < 0)
+        return ret;
+
+    Sprite ** begin = canvas->container.sprites;
+    if (canvas->container.len > 0) {
+        for (int i = canvas->container.len - 1; i >= insertIdx; i--) {
+            begin[i]->canvasIdx += 1;
+            begin[i + 1] = begin[i];
+        }
+    }
+
+    begin[insertIdx] = sprite;
+    sprite->canvasIdx = insertIdx;
+    canvas->container.len += 1;
+
+    sprite_set_scale_ratio(sprite, canvas->scaleRatio);
+
+    return 0;
+}
+
+int add_sprite_to_canvas(Canvas * canvas, Sprite * sprite)
+{
+    return canvas_insert_sprite(canvas, sprite, 0);
+}
+
+int remove_sprite_from_canvas(Canvas * canvas, Sprite * sprite)
 {
     if (sprite->canvasIdx < canvas->container.len) {
         Sprite ** begin = canvas->container.sprites;
-        memmove(begin + sizeof(Sprite*) * sprite->canvasIdx,
-            begin + sizeof(Sprite *) * (sprite->canvasIdx + 1),
-            (canvas->container.len - sprite->canvasIdx - 1) * sizeof(Sprite*));
+        if (sprite != begin[sprite->canvasIdx])
+            return 2;
+
+        for (int i = sprite->canvasIdx + 1; i < canvas->container.len; i++) {
+            begin[i]->canvasIdx -= 1;
+            begin[i - 1] = begin[i];
+        }
+        canvas->container.len -= 1;
+        return 0;
     }
-    return;
+    return 1;
+}
+
+int canvas_remote_sprite_by_index(Canvas * canvas, int removeIdx)
+{
+    if (removeIdx < canvas->container.len) {
+        return remove_sprite_from_canvas(canvas, canvas->container.sprites[removeIdx]);
+    }
+    return 1;
 }
 
 static void canvas_scale_mouse(Canvas * canvas, SDL_MouseMotionEvent *mouseEvent)
