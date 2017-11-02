@@ -109,7 +109,7 @@ static void canvas_draw_padding(Canvas * canvas)
             rects[1].h = canvas->drawRect.h;
         }
         //draw rect
-        SDL_RenderFillRects(canvas->renderer, &rects, 2);
+        SDL_RenderFillRects(canvas->renderer, rects, 2);
 
         SDL_SetRenderDrawColor(canvas->renderer, r, g, b, a);
     }
@@ -164,7 +164,7 @@ void add_sprite_to_canvas(Canvas * canvas, Sprite * sprite)
 void remove_sprite_from_canvas(Canvas * canvas, Sprite * sprite)
 {
     if (sprite->canvasIdx < canvas->container.len) {
-        Sprite ** begin;
+        Sprite ** begin = canvas->container.sprites;
         memmove(begin + sizeof(Sprite*) * sprite->canvasIdx,
             begin + sizeof(Sprite *) * (sprite->canvasIdx + 1),
             (canvas->container.len - sprite->canvasIdx - 1) * sizeof(Sprite*));
@@ -252,7 +252,7 @@ void draw_canvas(Canvas * canvas)
             selectedSprite->width * canvas->scaleRatio,
             selectedSprite->height * canvas->scaleRatio
         };
-        draw_select_sprite(&rect, canvas->renderer, canvas->drawRect.x, canvas->drawRect.y);
+        draw_select_sprite(&rect, canvas->renderer);
     }
 
     present_canvas(canvas);

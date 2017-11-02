@@ -129,7 +129,7 @@ static int locate_scale_rect(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
     return x * y;
 }
 
-static int top_center_to_bottom_flip(Sprite * sprite, int diffY)
+static void top_center_to_bottom_flip(Sprite * sprite, int diffY)
 {
         set_flip_angle(sprite, SDL_FLIP_VERTICAL);
         sprite->leftTopY= sprite->leftTopY + sprite->height;
@@ -168,7 +168,7 @@ void init_sprite(Sprite * sprite)
     sprite->scaleRatio = 1.0;
 }
 
-int move_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
+void move_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 {
     sprite->leftTopX = (mouseEvent->x - sprite->previousX + sprite->leftTopX);
     sprite->leftTopY = (mouseEvent->y - sprite->previousY + sprite->leftTopY);
@@ -176,7 +176,7 @@ int move_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
     sprite->previousY = mouseEvent->y;
 }
 
-int left_top_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
+void left_top_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 {
     int diffX = mouseEvent->x - sprite->previousX;
     int diffY = mouseEvent->y - sprite->previousY;
@@ -188,7 +188,7 @@ int left_top_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
         move_sprite(sprite, mouseEvent);
         sprite->width -= diffX;
         sprite->height -= diffY;
-        return 0;
+        return;
     }
 
     sprite->previousX = mouseEvent->x;
@@ -218,7 +218,7 @@ int left_top_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
     }
 }
 
-int left_bottom_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
+void left_bottom_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 {
     int diffX = mouseEvent->x - sprite->previousX;
     int diffY = mouseEvent->y - sprite->previousY;
@@ -258,7 +258,7 @@ int left_bottom_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
     }
 }
 
-int right_top_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
+void right_top_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 {
     int diffX = mouseEvent->x - sprite->previousX;
     int diffY = mouseEvent->y - sprite->previousY;
@@ -298,7 +298,7 @@ int right_top_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
     }
 }
 
-int right_bottom_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
+void right_bottom_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 {
     int diffX = mouseEvent->x - sprite->previousX;
     int diffY = mouseEvent->y - sprite->previousY;
@@ -333,7 +333,7 @@ int right_bottom_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
     }
 }
 
-int top_center_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
+void top_center_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 {
     int diffY = mouseEvent->y - sprite->previousY;
 
@@ -349,7 +349,7 @@ int top_center_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
     }
 }
 
-int bottom_center_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
+void bottom_center_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 {
     int diffY = mouseEvent->y - sprite->previousY;
 
@@ -363,7 +363,7 @@ int bottom_center_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent
     }
 }
 
-int left_center_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
+void left_center_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 {
     int diffX = mouseEvent->x - sprite->previousX;
     int diffY = mouseEvent->y - sprite->previousY;
@@ -381,7 +381,7 @@ int left_center_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
     }
 }
 
-int right_center_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
+void right_center_scale_sprite(Sprite * sprite, SDL_MouseMotionEvent *mouseEvent)
 {
     int diffX = mouseEvent->x - sprite->previousX;
     int diffY = mouseEvent->y - sprite->previousY;
