@@ -141,8 +141,8 @@ void SdlEvent::on_pushButton_clicked()
     SDL_QueryTexture(background.texture, NULL, NULL, &background.width, &background.height);
     SDL_QueryTexture(image.texture, NULL, NULL, &image.width, &image.height);
 
-    add_sprite_to_canvas(&canvas, &image);
     add_sprite_to_canvas(&canvas, &background);
+    add_sprite_to_canvas(&canvas, &image);
 
     return ;
 }

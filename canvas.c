@@ -262,7 +262,7 @@ void draw_canvas(Canvas * canvas)
     SDL_SetRenderTarget(canvas->renderer, canvas->canvasTexture);
     clear_canvas(canvas);
 
-    for (int i = 0; i < canvas->container.len; i++) {
+    for (int i = canvas->container.len - 1; i >= 0; i--) {
         Sprite * s = sprites[i];
         if (s->isSelected) {
             selectedSprite = s;
