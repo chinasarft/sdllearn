@@ -44,6 +44,9 @@ static int get_pixel_format_pitch(Uint32 pixelFormat, int w)
     case SDL_PIXELFORMAT_BGRA8888:
     case SDL_PIXELFORMAT_ABGR8888:
         return w*4;
+    case SDL_PIXELFORMAT_IYUV: //yuv420p
+    case SDL_PIXELFORMAT_YV12: //yuv420p reverse u v
+        return 0;
     }
     return 0;
 }
@@ -73,7 +76,7 @@ int init_canvas(Canvas * canvas, SDL_Renderer * renderer,
 
     set_draw_rect(canvas);
 
-    canvas->targetTexture = SDL_CreateTexture(canvas->renderer, SDL_PIXELFORMAT_RGBA8888,
+    canvas->targetTexture = SDL_CreateTexture(canvas->renderer, SDL_PIXELFORMAT_ARGB8888,
         SDL_TEXTUREACCESS_TARGET, canvas->canvasWidth, canvas->canvasHeight);
     if (canvas->targetTexture == NULL) {
         return -1;
@@ -301,13 +304,22 @@ void draw_canvas(Canvas * canvas)
         SDL_RenderCopyEx(canvas->renderer, s->texture, NULL, &dst, s->angle, 0, s->flip);
     }
 
+    //draw a read rect
+    SDL_Rect rect = { 400, 400, 100, 100 };
+    Uint8 r, g, b, a;
+    SDL_GetRenderDrawColor(canvas->renderer, &r, &g, &b, &a);
+    SDL_SetRenderDrawColor(canvas->renderer, 255, 0, 0, 255);
+    SDL_RenderFillRect(canvas->renderer, &rect);
+    SDL_SetRenderDrawColor(canvas->renderer, r, g, b, a);
+    //end draw red rect
+
     //start--------------------------------------
     //SDL_GetWindowPixelFormat same as surface->format->format
     //pitch value define by us not the render or render target
     if (canvas->catchCanvas) {
-        int pitch = get_pixel_format_pitch(SDL_PIXELFORMAT_RGBA8888, canvas->canvasWidth);
+        int pitch = get_pixel_format_pitch(SDL_PIXELFORMAT_ARGB8888, canvas->canvasWidth);
         if (SDL_RenderReadPixels(canvas->renderer, NULL,
-            SDL_PIXELFORMAT_RGBA8888, canvas->pixels, pitch) == 0) {
+            SDL_PIXELFORMAT_ARGB8888, canvas->pixels, pitch) == 0) {
             write_texture(canvas->pixels, canvas->canvasWidth,
                 canvas->canvasHeight, pitch);
         }

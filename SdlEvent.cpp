@@ -113,7 +113,7 @@ void SdlEvent::on_pushButton_clicked()
 
     //The textures we'll be using
     const std::string resPath = "C:\\d\\render\\sdl_learn\\sdl_project\\SdlEvent\\";
-    background.texture = loadTexture(resPath + "background.png", canvas.renderer);
+    background.texture = loadTexture(resPath + "1.png", canvas.renderer);
     direction.texture = loadTexture(resPath + "direction.png", canvas.renderer);
     image.texture = loadTexture(resPath + "image.png", canvas.renderer);
     //Make sure they both loaded ok
@@ -122,9 +122,13 @@ void SdlEvent::on_pushButton_clicked()
         return ;
     }
 
-    SDL_QueryTexture(background.texture, NULL, NULL, &background.width, &background.height);
-    SDL_QueryTexture(direction.texture, NULL, NULL, &direction.width, &direction.height);
-    SDL_QueryTexture(image.texture, NULL, NULL, &image.width, &image.height);
+    Uint32 f1, f2, f3;
+    SDL_QueryTexture(background.texture, &f1, NULL, &background.width, &background.height);
+    SDL_QueryTexture(image.texture, &f3, NULL, &image.width, &image.height);
+    SDL_QueryTexture(direction.texture, &f2, NULL, &direction.width, &direction.height);
+    qDebug() << "background:" << SDL_GetPixelFormatName(f1) << background.width << background.height;
+    qDebug() << "     image:" << SDL_GetPixelFormatName(f2) << direction.width << direction.height;
+    qDebug() << " direction:" << SDL_GetPixelFormatName(f3) << image.width << image.height;
 
     add_sprite_to_canvas(&canvas, &background);
     add_sprite_to_canvas(&canvas, &image);
@@ -195,14 +199,4 @@ void SdlEvent::slot_render()
     enableBlend();
 
     draw_canvas(&canvas);
-
-    //draw a read rect
-    SDL_Rect rect{ 400, 400, 100, 100 };
-    Uint8 r, g, b, a;
-    SDL_GetRenderDrawColor(canvas.renderer, &r, &g, &b, &a);
-    SDL_SetRenderDrawColor(canvas.renderer, 255, 0, 0, 255);
-    //SDL_RenderDrawRect (canvas.renderer, &rect);
-    SDL_RenderFillRect(canvas.renderer, &rect);
-    SDL_SetRenderDrawColor(canvas.renderer, r, g, b, a);
-    //end draw red rect
 }
