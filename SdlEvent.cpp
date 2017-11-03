@@ -12,6 +12,7 @@ SdlEvent::SdlEvent(QWidget *parent)
         qDebug() << "SDL_Init Error: " << SDL_GetError();
     }
     init_sprite(&background);
+    init_sprite(&direction);
     init_sprite(&image);
     memset(&canvas, 0, sizeof(Canvas));
     //background.angle = 180;
@@ -32,6 +33,7 @@ SdlEvent::~SdlEvent()
     }
     //Destroy the various items
     cleanup(background.texture, image.texture);
+    cleanup(direction.texture, NULL);
     if (window) {
         cleanup(window);
     }
@@ -97,6 +99,11 @@ void SdlEvent::cleanup(SDL_Texture* tex1, SDL_Texture * tex2)
         SDL_DestroyTexture(tex2);
 }
 
+void SdlEvent::on_btnCatchCanvas_clicked()
+{
+    canvas.catchCanvas = 1;
+}
+
 void SdlEvent::on_pushButton_clicked()
 {
     //Setup our window and renderer
@@ -135,18 +142,21 @@ void SdlEvent::on_pushButton_clicked()
     //The textures we'll be using
     const std::string resPath = "C:\\d\\render\\sdl_learn\\sdl_project\\SdlEvent\\";
     background.texture = loadTexture(resPath + "background.png", canvas.renderer);
+    direction.texture = loadTexture(resPath + "direction.png", canvas.renderer);
     image.texture = loadTexture(resPath + "image.png", canvas.renderer);
     //Make sure they both loaded ok
-    if (background.texture == nullptr || image.texture == nullptr) {
+    if (background.texture == nullptr || image.texture == nullptr || direction.texture == nullptr) {
         cleanup(background.texture, image.texture);
         return ;
     }
 
     SDL_QueryTexture(background.texture, NULL, NULL, &background.width, &background.height);
+    SDL_QueryTexture(direction.texture, NULL, NULL, &direction.width, &direction.height);
     SDL_QueryTexture(image.texture, NULL, NULL, &image.width, &image.height);
 
     add_sprite_to_canvas(&canvas, &background);
     add_sprite_to_canvas(&canvas, &image);
+    add_sprite_to_canvas(&canvas, &direction);
 
     return ;
 }
@@ -157,6 +167,9 @@ void SdlEvent::enableBlend()
     SDL_SetRenderDrawBlendMode(canvas.renderer, SDL_BLENDMODE_BLEND);
     if (background.texture != nullptr) {
         SDL_SetTextureBlendMode(background.texture, SDL_BLENDMODE_BLEND);
+    }
+    if (direction.texture != nullptr) {
+        SDL_SetTextureBlendMode(direction.texture, SDL_BLENDMODE_BLEND);
     }
     if (image.texture != nullptr) {
         SDL_SetTextureBlendMode(image.texture, SDL_BLENDMODE_BLEND);

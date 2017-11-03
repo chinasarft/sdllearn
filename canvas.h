@@ -26,6 +26,8 @@ typedef struct{
     float scaleRatio; // drawRect.w / canvasWidth
     SDL_Surface * surface;
     SDL_Texture * targetTexture;
+    Uint8 * pixels;
+    int catchCanvas;
 }Canvas;
 
 // canvasWidth: not real width. like 16

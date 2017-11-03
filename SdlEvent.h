@@ -55,6 +55,7 @@ private:
     WorkerThread thread;
     Sprite image;
     Sprite background ;
+    Sprite direction;
     Canvas canvas;
     int transparentValue=180;
 
@@ -102,6 +103,7 @@ private:
 
 private slots:
     void on_pushButton_clicked();
+    void on_btnCatchCanvas_clicked();
     void on_spinBox_valueChanged(int arg1);
     void slot_render();
 };
