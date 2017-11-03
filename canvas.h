@@ -24,7 +24,6 @@ typedef struct{
     }padColor;
     SDL_Rect drawRect; //real draw area. w h is real w h
     float scaleRatio; // drawRect.w / canvasWidth
-    SDL_Surface * surface;
     SDL_Texture * targetTexture;
     Uint8 * pixels;
     int catchCanvas;
@@ -32,7 +31,7 @@ typedef struct{
 
 // canvasWidth: not real width. like 16
 // canvasHeight: not real height like 9
-int __declspec(dllexport) init_canvas(Canvas * canvas, SDL_Renderer * renderer, SDL_Surface * surface,
+int __declspec(dllexport) init_canvas(Canvas * canvas, SDL_Renderer * renderer,
                                         int canvasWidth, int canvasHeight,
                                         int windowWidth, int windowHeight);
 void __declspec(dllexport) clear_canvas(Canvas * canvas);

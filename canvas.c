@@ -55,7 +55,7 @@ void set_canvas_pad_color(Canvas * canvas, Uint8 r, Uint8 g, Uint8 b)
     canvas->padColor.b = b;
 }
 
-int init_canvas(Canvas * canvas, SDL_Renderer * renderer, SDL_Surface * surface,
+int init_canvas(Canvas * canvas, SDL_Renderer * renderer,
     int canvasWidth, int canvasHeight,
     int windowWidth, int windowHeight)
 {
@@ -64,7 +64,6 @@ int init_canvas(Canvas * canvas, SDL_Renderer * renderer, SDL_Surface * surface,
     canvas->windowWidth = windowWidth;
     canvas->windowHeight = windowHeight;
 
-    canvas->surface = surface;
     canvas->renderer = renderer;
 
     canvas->container.len = 0;

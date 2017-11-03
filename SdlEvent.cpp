@@ -5,7 +5,6 @@ SdlEvent::SdlEvent(QWidget *parent)
 {
     ui.setupUi(this);
     isSDLInitOk = false;
-    btnCnt = 0;
     if (SDL_Init(SDL_INIT_VIDEO) != 0)
     {
         isSDLInitOk = true;
@@ -47,27 +46,6 @@ void SdlEvent::closeEvent(QCloseEvent *event)
 void SdlEvent::logSDLError(std::string str)
 {
     qDebug() << str.c_str();
-}
-
-void SdlEvent::renderTexture(SDL_Texture *tex, SDL_Renderer *ren, int x, int y, int w, int h, 
-    const double angle, const SDL_Point *center, SDL_RendererFlip flip) {
-    //Setup the destination rectangle to be at the position we want
-    SDL_Rect dst;
-    dst.x = x;
-    dst.y = y;
-    dst.w = w;
-    dst.h = h;
-    int ret = 0;
-    ret = SDL_RenderCopyEx(ren, tex, NULL, &dst, angle, 0, flip);
-    if (ret != 0) {
-        qDebug() << "SDL_RenderCopy Error: " << SDL_GetError();
-    }
-}
-
-void SdlEvent::renderTexture(SDL_Texture *tex, SDL_Renderer *ren, int x, int y) {
-    int w, h;
-    SDL_QueryTexture(tex, NULL, NULL, &w, &h);
-    renderTexture(tex, ren, x, y, w, h,0, 0, SDL_FLIP_NONE);
 }
 
 SDL_Texture* SdlEvent::loadTexture(const std::string &file, SDL_Renderer *ren)
@@ -123,20 +101,14 @@ void SdlEvent::on_pushButton_clicked()
         return;
     }
 
-    SDL_Surface * surface = SDL_GetWindowSurface(window);
-    if (init_canvas(&canvas, r, surface, 1280, 720, ui.label->width(), ui.label->height()) != 0) {
+    if (init_canvas(&canvas, r, 1280, 720, ui.label->width(), ui.label->height()) != 0) {
         qDebug() << "init_canvas fail";
         return;
     }
     set_canvas_pad_color(&canvas, 57, 58, 57);
 
     Uint32 winPf = SDL_GetWindowPixelFormat(window);
-    Uint32 surPf = surface->format->format;
-    qDebug() << "winPf:" << winPf << " surPf:" << surPf;
-    if(winPf == surPf)
-        qDebug() << "pixel format name:"<<SDL_GetPixelFormatName(winPf);
-    else
-        qDebug() << "winPf name:"<<SDL_GetPixelFormatName(winPf) << " surPf name:"<< SDL_GetPixelFormatName(surPf);
+    qDebug() << "winPf:" << winPf << "pixel format name:"<<SDL_GetPixelFormatName(winPf);
 
 
     //The textures we'll be using
@@ -220,52 +192,17 @@ void SdlEvent::slot_render()
         //break;
     }
 
-    btnCnt++;
-    int SCREEN_WIDTH = ui.label->width()/2;
-    int SCREEN_HEIGHT = ui.label->height()/2;
-    int TILE_SIZE = 40;
+    enableBlend();
 
-    //Determine how many tiles we'll need to fill the screen
-    int xTiles = SCREEN_WIDTH / TILE_SIZE;
-    int yTiles = SCREEN_HEIGHT / TILE_SIZE;
+    draw_canvas(&canvas);
 
-    //if (btnCnt % 2 == 0) {
-    if (0) {
-        //Draw the tiles by calculating their positions
-        for (int i = 0; i < xTiles * yTiles; ++i) {
-            int x = i % xTiles;
-            int y = i / xTiles;
-            renderTexture(background.texture, canvas.renderer, x * TILE_SIZE, 
-                y * TILE_SIZE , TILE_SIZE, TILE_SIZE,
-                background.angle, 0, SDL_FLIP_NONE);
-        }
-    }
-    else if (1) {
-        enableBlend();
-
-        draw_canvas(&canvas);
-
-        //draw a read rect
-        SDL_Rect rect{ 400, 400, 100, 100 };
-        Uint8 r, g, b, a;
-        SDL_GetRenderDrawColor(canvas.renderer, &r, &g, &b, &a);
-        SDL_SetRenderDrawColor(canvas.renderer, 255, 0, 0, 255);
-        //SDL_RenderDrawRect (canvas.renderer, &rect);
-        SDL_RenderFillRect (canvas.renderer, &rect);
-        SDL_SetRenderDrawColor(canvas.renderer, r, g, b, a);
-        //end draw red rect
-
-    }
-    else {
-
-        //Draw our image in the center of the window
-        //We need the foreground image's width to properly compute the position
-        //of it's top left corner so that the image will be centered
-        int iW, iH;
-        SDL_QueryTexture(image.texture, NULL, NULL, &iW, &iH);
-        int x = SCREEN_WIDTH / 2 - iW / 2;
-        int y = SCREEN_HEIGHT / 2 - iH / 2;
-        renderTexture(image.texture, canvas.renderer, x, y);
-    }
-
+    //draw a read rect
+    SDL_Rect rect{ 400, 400, 100, 100 };
+    Uint8 r, g, b, a;
+    SDL_GetRenderDrawColor(canvas.renderer, &r, &g, &b, &a);
+    SDL_SetRenderDrawColor(canvas.renderer, 255, 0, 0, 255);
+    //SDL_RenderDrawRect (canvas.renderer, &rect);
+    SDL_RenderFillRect(canvas.renderer, &rect);
+    SDL_SetRenderDrawColor(canvas.renderer, r, g, b, a);
+    //end draw red rect
 }
