@@ -271,19 +271,17 @@ void canvas_response_mouse_press(Canvas * canvas, SDL_MouseMotionEvent *mouseEve
 }
 
 #include <stdio.h>
-FILE * file = NULL;
-void write_texture(Uint8 *pixels, int w, int h, int pitch)
+void write_texture2(Uint8 *pixels, int w, int h, int pitch)
 {
-    if (pixels == NULL)
-        return;
-    if (file == NULL) {
-        file = fopen("mt.rgba", "w+");
-    }
-    if (file != NULL) {
-        int len = pitch * h;
-        fwrite(pixels, len, 1, file);
-        fclose(file);
-        file = NULL;
+    static int cnt = 0;
+    SDL_Surface * s = SDL_CreateRGBSurfaceWithFormatFrom(pixels, w, h, 32, pitch,
+        SDL_PIXELFORMAT_ARGB8888);
+    if (s != NULL) {
+        char n[20] = { 0 };
+        sprintf(n, "abc%d.png", cnt);
+        IMG_SavePNG(s, n);
+        cnt++;
+        SDL_FreeSurface(s);
     }
 }
 
@@ -320,7 +318,7 @@ void draw_canvas(Canvas * canvas)
         int pitch = get_pixel_format_pitch(SDL_PIXELFORMAT_ARGB8888, canvas->canvasWidth);
         if (SDL_RenderReadPixels(canvas->renderer, NULL,
             SDL_PIXELFORMAT_ARGB8888, canvas->pixels, pitch) == 0) {
-            write_texture(canvas->pixels, canvas->canvasWidth,
+            write_texture2(canvas->pixels, canvas->canvasWidth,
                 canvas->canvasHeight, pitch);
         }
         else {

@@ -113,7 +113,7 @@ void SdlEvent::on_pushButton_clicked()
 
     //The textures we'll be using
     const std::string resPath = "C:\\d\\render\\sdl_learn\\sdl_project\\SdlEvent\\";
-    background.texture = loadTexture(resPath + "1.png", canvas.renderer);
+    background.texture = loadTexture(resPath + "background.png", canvas.renderer);
     direction.texture = loadTexture(resPath + "direction.png", canvas.renderer);
     image.texture = loadTexture(resPath + "image.png", canvas.renderer);
     //Make sure they both loaded ok
