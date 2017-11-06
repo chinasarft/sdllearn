@@ -318,8 +318,10 @@ void draw_canvas(Canvas * canvas)
         int pitch = get_pixel_format_pitch(SDL_PIXELFORMAT_ARGB8888, canvas->canvasWidth);
         if (SDL_RenderReadPixels(canvas->renderer, NULL,
             SDL_PIXELFORMAT_ARGB8888, canvas->pixels, pitch) == 0) {
-            write_texture2(canvas->pixels, canvas->canvasWidth,
-                canvas->canvasHeight, pitch);
+#ifndef PERFTEST
+           write_texture2(canvas->pixels, canvas->canvasWidth,
+               canvas->canvasHeight, pitch);
+#endif
         }
         else {
             char * tmp = SDL_GetError();

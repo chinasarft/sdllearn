@@ -1,4 +1,5 @@
 #include "SdlEvent.h"
+#include <QTime>
 
 SdlEvent::SdlEvent(QWidget *parent)
     : QMainWindow(parent)
@@ -101,7 +102,7 @@ void SdlEvent::on_pushButton_clicked()
         return;
     }
 
-    if (init_canvas(&canvas, r, 1280, 720, ui.label->width(), ui.label->height()) != 0) {
+    if (init_canvas(&canvas, r, 1920, 1080, ui.label->width(), ui.label->height()) != 0) {
         qDebug() << "init_canvas fail";
         return;
     }
@@ -198,5 +199,16 @@ void SdlEvent::slot_render()
 
     enableBlend();
 
+#ifdef PERFTEST
+    QTime st = QTime::currentTime();
+    for (int i = 0; i < 1000; i++) {
+        canvas.catchCanvas = 1;
+        draw_canvas(&canvas);
+    }
+    QTime et = QTime::currentTime();
+    qDebug() << st.minute() << st.second() << st.msec();
+    qDebug() << et.minute() << et.second() << et.msec();
+#else
     draw_canvas(&canvas);
+#endif
 }
