@@ -85,6 +85,13 @@ int init_canvas(Canvas * canvas, SDL_Renderer * renderer,
     return 0;
 }
 
+int canvas_window_resized(Canvas * canvas, int windowWidth, int windowHeight)
+{
+    canvas->windowWidth = windowWidth;
+    canvas->windowHeight = windowHeight;
+    set_draw_rect(canvas);
+}
+
 void present_canvas(Canvas * canvas)
 {
     //Update the screen

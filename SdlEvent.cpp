@@ -190,6 +190,16 @@ void SdlEvent::slot_render()
             canvas_response_mouse_move(&canvas, &e.motion);
 
             break;
+        case SDL_WINDOWEVENT:
+            if (e.window.event == SDL_WINDOWEVENT_RESIZED)
+            {
+                int tmpX, tmpY;
+                SDL_GetWindowSize(window, &tmpX, &tmpY);
+                canvas_window_resized(&canvas, tmpX, tmpY);
+                // data1 is tmpX, data2 is tmpY
+                qDebug() << "new size:" << tmpX << tmpY << e.window.data1 <<e.window.data2;
+            }
+            break;
         default:
             qDebug() << "event..........." << e.type;
 
